@@ -1,0 +1,80 @@
+{
+    "task": {
+        "name": "delivery package",
+        "description": "collect a package from a initial location and deliver it to the target's address",
+        "context_descriptors": [
+            {
+                "name": "current_location",
+                "description": "the current location of the package",
+                "type": "string"
+            },
+            {
+                "name": "target_location",
+                "description": "the target location for delivering the package",
+                "type": "string"
+            }
+        ],
+        "constraints": [
+            {
+                "time_to_deliver": "less",
+                "value": 60
+            },
+            {
+                "price": "less",
+                "value": 1000
+            }
+        ],
+        "cbr_attributes": [
+            {
+                "time_to_deliver": 2,
+                "max_or_min": "min"
+            },
+            {
+                "price": 1,
+                "max_or_min": "min"
+            },
+            {
+                "rating": 1,
+                "max_or_min": "max"
+            }
+        ],
+        "uncertainty_runtime_properties": [
+            {
+                "fragile": [
+                    {
+                        "time_to_deliver": 2,
+                        "max_or_min": "min"
+                    },
+                    {
+                        "price": 1,
+                        "max_or_min": "min"
+                    },
+                    {
+                        "rating": 2,
+                        "max_or_min": "max"
+                    }
+                ]
+            },
+            {
+                "raining": [
+                    {
+                        "time_to_deliver": 2,
+                        "max_or_min": "min"
+                    },
+                    {
+                        "price": 1,
+                        "max_or_min": "min"
+                    },
+                    {
+                        "rating": 2,
+                        "max_or_min": "max"
+                    },
+                    {
+                        "safe_to_rain": 3,
+                        "max_or_min": "max"
+                    }
+                ]
+            }
+        ]
+    }
+}

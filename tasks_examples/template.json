@@ -1,0 +1,86 @@
+{
+    "task": {
+        "name": "<task_name>",
+        "description": "<task_description>",
+        "context_descriptors": [
+            {
+                "name": "<context_descriptor_name>",
+                "description": "<context_descriptor_description>",
+                "type": "string|integer|float|boolean"
+            },
+            {
+                "name": "<context_descriptor_name>",
+                "description": "<context_descriptor_description>",
+                "type": "string|integer|float|boolean"
+            }
+        ],
+        "default_constraints": [
+            {
+                "name": "<constraint_name>",
+                "logical_expression": "<condition_id> AND|OR|XOR|NOT|NAND|NOR|XNOR <condition_id>",
+                "conditions": [
+                    {
+                        "condition_id": "<condition_id>",
+                        "attribute": "<attribute_name>",
+                        "condition_operator": "greater|less|geq|leq|eq|neq|in|nin",
+                        "value": "<atr_value>|<attribute_name>"        
+                    },
+                    {
+                        "condition_id": "<condition_id>",
+                        "attribute": "<attribute_name>",
+                        "condition_operator": "greater|less|geq|leq|eq|neq|in|nin",
+                        "value": "<atr_value>|<attribute_name>"        
+                    }
+                ]
+            }
+        ],
+        "default_cbr": [
+            {
+                "<attribute_1_name>": "<attribute_1_weight>",
+                "<max_or_min>": "max|min"
+            },
+            {
+                "<attribute_2>": "<attribute_2_weight>",
+                "<max_or_min>": "max|min"
+            },
+            {
+                "<attribute_3>": "<attribute_3_weight>",
+                "<max_or_min>": "max|min"
+            }
+        ],
+        "uncertainty_runtime_cbr": [
+            {
+                "<uncertainty_name>": {
+                    "constraints": [
+                        {
+                            "name": "<constraint_name>",
+                            "logical_expression": "<condition_id> AND|OR|XOR|NOT|NAND|NOR|XNOR <condition_id>",
+                            "conditions": [
+                                {
+                                    "condition_id": "<condition_id>",
+                                    "attribute": "<attribute_name>",
+                                    "condition_operator": "greater|less|geq|leq|eq|neq|in|nin",
+                                    "value": "<atr_value>|<attribute_name>"        
+                                }
+                            ]
+                        }
+                    ],
+                    "cbr": [
+                        {
+                            "<attribute_1_name>": "<attribute_1_weight>",
+                            "<max_or_min>": "max|min"
+                        },
+                        {
+                            "<attribute_2>": "<attribute_2_weight>",
+                            "<max_or_min>": "max|min"
+                        },
+                        {
+                            "<attribute_3>": "<attribute_3_weight>",
+                            "<max_or_min>": "max|min"
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+}

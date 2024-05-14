@@ -1,0 +1,55 @@
+{
+    "task": {
+        "name": "<task_name>",
+        "description": "<task_description>",
+        "cbr_attributes": [
+            {
+                "<attribute_1>": "<attribute_1_weight>"
+            },
+            {
+                "<attribute_2>": "<attribute_2_weight>"
+            },
+            {
+                "<attribute_3>": "<attribute_3_weight>"
+            }
+        ],
+        "uncertainty_runtime_properties": [
+            {
+                "<uncertainty_1>": [
+                    {
+                        "<attribute_1>": "<attribute_1_weight>"
+                    },
+                    {
+                        "<attribute_2>": "<attribute_2_weight>"
+                    },
+                    {
+                        "<attribute_3>": "<attribute_3_weight>"
+                    }    
+                ]
+            }
+        ],
+        "profile": "it's just a possibility",
+        "subtasks": [
+            {
+                "stepNumber": 1,
+                "description": "Attach the robot's base to the chassis."
+            },
+            {
+                "stepNumber": 2,
+                "description": "Connect the robot's arms to the base."
+            },
+            {
+                "stepNumber": 3,
+                "description": "Install the robot's head and sensors."
+            },
+            {
+                "stepNumber": 4,
+                "description": "Attach the robot's wheels or legs."
+            },
+            {
+                "stepNumber": 5,
+                "description": "Test the robot's functionality."
+            }
+        ]
+    }
+}

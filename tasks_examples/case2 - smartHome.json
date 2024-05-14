@@ -1,0 +1,58 @@
+[
+    {
+        "task": {
+            "name": "remind medicine",
+            "description": "send a notification to take medicine at specific time",
+            "cbr_attributes": [
+                {
+                    "distance_to_elder": 1,
+                    "max_or_min": "min"
+                },
+                {
+                    "battery_level": 1,
+                    "max_or_min": "max"
+                }
+            ],
+            "uncertainty_runtime_properties": [
+                {
+                    "no_internet": [
+                        {
+                            "distance_to_elder": 1,
+                            "max_or_min": "min"
+                        },
+                        {
+                            "rating": 2,
+                            "max_or_min": "max"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "task": {
+            "name": "monitor health",
+            "description": "monitor health of elder and send notification to family members in case of emergency",
+            "cbr_attributes": [
+                {
+                    "data_update_frequency": 1,
+                    "max_or_min": "max"
+                },
+                {
+                    "battery_level": 1,
+                    "max_or_min": "max"
+                }
+            ],
+            "uncertainty_runtime_properties": [
+                {
+                    "no_data": [
+                        {
+                            "family_member": 999,
+                            "max_or_min": "max"
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+]

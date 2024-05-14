@@ -1,0 +1,36 @@
+[
+    {
+        "task": {
+            "name": "prepare order",
+            "description": "prepare orders for delivery",
+            "cbr_attributes": [
+                {
+                    "idle_time": 1,
+                    "max_or_min": "max"
+                },
+                {
+                    "battery_level": 1,
+                    "max_or_min": "max"
+                }
+            ],
+            "uncertainty_runtime_properties": []
+        }
+    },
+    {
+        "task": {
+            "name": "sort returned items",
+            "description": "sort returned items for restocking",
+            "cbr_attributes": [
+                {
+                    "idle_time": 1,
+                    "max_or_min": "max"
+                },
+                {
+                    "battery_level": 1,
+                    "max_or_min": "max"
+                }
+            ],
+            "uncertainty_runtime_properties": []
+        }
+    }
+]
