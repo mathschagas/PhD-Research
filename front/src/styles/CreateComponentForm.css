@@ -1,0 +1,40 @@
+.form-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f2f2f2;  /* A pastel gray */
+}
+
+.create-component-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px;
+    border-radius: 10px;
+    background-color: #fff0f5;  /* A pastel pink */
+}
+
+.create-component-form label {
+    font-size: 1.2em;
+    color: #a9a9a9;  /* A pastel gray */
+}
+
+.create-component-form input[type="text"] {
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #a9a9a9;  /* A pastel gray */
+}
+
+.create-component-form input[type="submit"] {
+    padding: 10px 20px;
+    border-radius: 5px;
+    border: none;
+    background-color: #add8e6;  /* A pastel blue */
+    color: white;
+    cursor: pointer;
+}
+
+.create-component-form input[type="submit"]:hover {
+    background-color: #87cefa;  /* A slightly darker pastel blue */
+}
