@@ -3,13 +3,14 @@ import TypeDropdown from "./TypeDropdown";
 import { Form, Input, Button, Space, Select, Card } from "antd";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 import axios from "axios";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 const EditTaskPage = () => {
   const { taskId } = useParams();
   const [form] = Form.useForm();
   const isUpdating = taskId !== undefined;
   const [allTasksData, setAllTasksData] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     axios
@@ -54,11 +55,12 @@ const EditTaskPage = () => {
       } else {
         console.log("Creating new Task");
         const response = await axios.post(
-          "http://127.0.0.1:5000/tasks/",
+          "http://127.0.0.1:5000/tasks",
           values
         );
         console.log("Task created successfully:", response.data);
       }
+      navigate("/marketplace");
     } catch (error) {
       console.error(
         "Error in API call:",

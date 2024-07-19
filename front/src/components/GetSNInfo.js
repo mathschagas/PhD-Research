@@ -8,11 +8,100 @@ import {
   Tooltip,
   Card,
   Spin,
+  Modal,
+  Checkbox,
+  List,
 } from "antd";
 import { SyncOutlined, UnorderedListOutlined } from "@ant-design/icons";
 import axios from "axios";
 
 function GetSNInfo() {
+  const [tasksList, setTasksList] = useState([]);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selectedTasks, setSelectedTasks] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [data, setData] = useState([]);
+  const [currentComponentPort, setCurrentComponentPort] = useState();
+
+  const fetchData = async () => {
+    setIsLoading(true);
+    try {
+      const response = await axios.get("http://127.0.0.1:5001/get_data");
+      console.log("Data fetched successfully:", response.data);
+      setData(response.data);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      setData([]);
+    }
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []); // Add dependencies if any
+
+  const showModal = (record) => {
+    setCurrentComponentPort(record.port);
+    axios
+      .get(`http://127.0.0.1:${record.port}/info`)
+      .then((response) => {
+        const taskIds = response.data.component.registered_tasks.map(
+          (task) => task.id
+        );
+        setSelectedTasks(taskIds);
+      })
+      .catch((error) => {
+        console.error("Error fetching tasks:", error);
+      });
+    setIsModalVisible(true);
+  };
+
+  const handleOk = () => {
+    let selectedTasksList = selectedTasks?.map((taskId) =>
+      tasksList.find((task) => task.id === taskId)
+    );
+    axios
+      .post(
+        `http://127.0.0.1:${currentComponentPort}/register_tasks`,
+        selectedTasksList
+      )
+      .then((response) => {
+        console.log("Tasks registered successfully:", response.data);
+      })
+      .catch((error) => {
+        console.error("Error registering tasks:", error);
+      });
+    setSelectedTasks([]);
+    setCurrentComponentPort();
+    setIsModalVisible(false);
+    fetchData();
+  };
+
+  const handleCancel = () => {
+    setSelectedTasks([]);
+    setCurrentComponentPort();
+    setIsModalVisible(false);
+  };
+
+  const onChange = (checkedValues) => {
+    setSelectedTasks(checkedValues);
+  };
+
+  const fetchTasks = async () => {
+    try {
+      const response = await axios.get("http://127.0.0.1:5000/tasks");
+      setTasksList(
+        response.data.map((task) => ({ id: task.id, name: task.name }))
+      );
+    } catch (error) {
+      console.error("Error fetching tasks:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchTasks();
+  }, []);
+
   const columns = [
     {
       align: "center",
@@ -91,7 +180,17 @@ function GetSNInfo() {
 
         return (
           <Card align="left" style={{ overflow: "auto", maxHeight: "100px" }}>
-            <pre>{JSON.stringify(tasksWithoutDescription, null, 2)}</pre>
+            <List
+              itemLayout="horizontal"
+              dataSource={tasksWithoutDescription}
+              renderItem={(task, index) => (
+                <List.Item key={index}>
+                  <List.Item.Meta
+                    title={<Tag color="blue">{task.name}</Tag>}
+                  />
+                </List.Item>
+              )}
+            />
           </Card>
         );
       },
@@ -103,33 +202,13 @@ function GetSNInfo() {
       key: "action",
       render: (_, record) => (
         <Space size="middle">
-          <Button>
+          <Button onClick={() => showModal(record)}>
             <UnorderedListOutlined />
           </Button>
         </Space>
       ),
     },
   ];
-
-  const [isLoading, setIsLoading] = useState(false);
-  const [data, setData] = useState([]);
-
-  const fetchData = async () => {
-    setIsLoading(true);
-    try {
-      const response = await axios.get("http://127.0.0.1:5001/get_data");
-      console.log("Data fetched successfully:", response.data);
-      setData(response.data);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-      setData([]);
-    }
-    setIsLoading(false);
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, []); // Add dependencies if any
 
   return (
     <>
@@ -156,6 +235,26 @@ function GetSNInfo() {
         dataSource={data}
         pagination={{ position: ["bottomLeft"] }}
       />
+      <Modal
+        title="Select Tasks"
+        visible={isModalVisible}
+        onOk={handleOk}
+        onCancel={handleCancel}
+      >
+        <Space>
+          <Checkbox.Group
+            style={{ width: "100%", display: "flex", flexDirection: "column" }}
+            onChange={onChange}
+            value={selectedTasks} // Garante que este estado contém os IDs corretos das tarefas
+          >
+            {tasksList?.map((task) => (
+              <Checkbox key={task.id} value={task.id}>
+                {task.name}
+              </Checkbox>
+            ))}
+          </Checkbox.Group>
+        </Space>
+      </Modal>
     </>
   );
 }
