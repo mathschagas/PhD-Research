@@ -16,10 +16,12 @@
         ],
         "constraints": [
             {
-                "time_to_deliver": "less",
+                "name": "time_to_deliver",
+                "operator": "less",
                 "value": 60
             },
             {
+                "name": "price",
                 "price": "less",
                 "value": 1000
             }
@@ -39,7 +41,7 @@
             }
         ],
         "uncertainty_runtime_properties": [
-            {
+            {   
                 "fragile": [
                     {
                         "time_to_deliver": 2,

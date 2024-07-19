@@ -120,11 +120,11 @@ const initialEdges = [
 ];
 
 const ModelTest = () => {
-  const [nodes, _, onNodesChange] = useNodesState(initialNodes);
+  const [nodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const onConnect = useCallback(
     (params) => setEdges((els) => addEdge(params, els)),
-    []
+    [setEdges]
   );
 
   return (

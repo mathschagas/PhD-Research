@@ -1,42 +1,37 @@
 import React, { useState, useEffect } from "react";
-import {
-  Space,
-  Table,
-  Button,
-  FloatButton,
-  Tooltip,
-  Modal,
-  Typography,
-} from "antd";
+import { Space, Table, Button, FloatButton, Tooltip } from "antd";
 import {
   DeleteOutlined,
   SyncOutlined,
   PlusCircleOutlined,
   EditOutlined,
 } from "@ant-design/icons";
-import TaskModal from "./TaskModal";
 import axios from "axios";
+import TaskDetails from "./TaskDetails";
+import { useNavigate } from "react-router-dom";
 
+// MarketPlace Component
 const MarketPlace = () => {
-    const [selectedTask, setSelectedTask] = useState(null);
+  // State for the selected task and tasks data from API
+  const [tasksData, setTasksData] = useState([]);
+  const navigate = useNavigate();
 
-    const [data, setData] = useState([]);
-  const components = [
-    ...new Set(data.flatMap((item) => item.registered_components)),
-  ];
-
+  // Function to fetch data from the API
   const fetchData = () => {
     axios
-      .get("http://127.0.0.1:5001/tasks")
+      .get("http://127.0.0.1:5000/tasks")
       .then((response) => {
-        setData(response.data);
+        setTasksData(response.data);
       })
       .catch((error) => {
         console.error("Error fetching data:", error);
       });
   };
+
+  // Fetch data on component mount
   useEffect(fetchData, []);
 
+  // Table columns configuration
   const columns = [
     {
       title: "ID",
@@ -51,42 +46,33 @@ const MarketPlace = () => {
       dataIndex: "name",
       key: "name",
       defaultSortOrder: "ascend",
-      sorter: (a, b) => a.name.localeCompare(b.name),
+      sorter: (a, b) => {
+        if (!a.name && !b.name) return 0;
+        if (!a.name) return -1;
+        if (!b.name) return 1;
+        return a.name.localeCompare(b.name);
+      },
       render: (name) => name,
     },
     {
-      title: "CBR",
-      dataIndex: "cbr",
-      key: "cbr",
-      render: (cbr) => (
-        <Typography.Paragraph copyable>
-          {/* <pre>{JSON.stringify(cbr, null, 2)}</pre> */}
-          {JSON.stringify(cbr, null, 2)}
-        </Typography.Paragraph>
-      ),
-    },
-    {
-      title: "Registered Components",
-      dataIndex: "registered_components",
-      key: "registered_components",
-      filters: components.map((component) => ({
-        text: component,
-        value: component,
-      })),
-      onFilter: (value, record) => record.registered_components.includes(value),
-      render: (registered_components) => (
-        <Typography.Paragraph copyable>
-          {/* <pre>{JSON.stringify(cbr, null, 2)}</pre> */}
-          {JSON.stringify(registered_components, null, 2)}
-        </Typography.Paragraph>
-      ),
+      title: "Description",
+      dataIndex: "description",
+      key: "description",
+      defaultSortOrder: "ascend",
+      sorter: (a, b) => {
+        if (!a.description && !b.description) return 0;
+        if (!a.description) return -1;
+        if (!b.description) return 1;
+        return a.description.localeCompare(b.description);
+      },
+      render: (description) => description,
     },
     {
       title: "Action",
       key: "action",
       render: (_, record) => (
         <Space size="middle">
-          <Button onClick={() => showTaskModal("update", record)}>
+          <Button onClick={() => navigate(`/marketplace/edit_task/${record.id}`)}>
             <EditOutlined />
           </Button>
           <Button onClick={() => deleteRow(record.id)}>
@@ -97,10 +83,11 @@ const MarketPlace = () => {
     },
   ];
 
+  // Function to delete a row from the table
   function deleteRow(key) {
     console.log("Deleting row:", key);
     axios
-      .delete(`http://127.0.0.1:5001/tasks/${key}`)
+      .delete(`http://127.0.0.1:5000/tasks/${key}`)
       .then(() => {
         fetchData();
       })
@@ -109,44 +96,26 @@ const MarketPlace = () => {
       });
   }
 
-  const [taskModal, setTaskModal] = useState({
-    isOpen: false,
-    type: null,
-  });
-
-  const showTaskModal = (type, task) => {
-    setTaskModal({ isOpen: true, type });
-    if (type === 'add') {
-        setSelectedTask(null);
-    } else {
-        setSelectedTask(task);
-    }    
-  };
-
-  const handleTaskModalOk = () => {
-    setTaskModal({ ...taskModal, isOpen: false });
-  };
-
-  const handleTaskModalCancel = () => {
-    setTaskModal({ ...taskModal, isOpen: false });
-  };
-
+  // Return the MarketPlace component
   return (
     <>
+      {/* Floating action buttons */}
       <FloatButton.Group
         shape="circle"
         style={{
           right: 24,
         }}
       >
+        {/* Add new task button */}
         <Tooltip title="Add New Task" placement="left">
           <FloatButton
             type="primary"
             icon={<PlusCircleOutlined />}
-            onClick={() => showTaskModal("add")}
+            onClick={() => navigate("/marketplace/new_task")}
           />
         </Tooltip>
 
+        {/* Refresh data button */}
         <Tooltip title="Refresh data" placement="left">
           <FloatButton
             type="primary"
@@ -155,23 +124,21 @@ const MarketPlace = () => {
           />
         </Tooltip>
       </FloatButton.Group>
-      <Modal
-        title={
-          taskModal.type === "add"
-            ? "Add New Task"
-            : "Update Task"
-        }
-        open={taskModal.isOpen}
-        onOk={handleTaskModalOk}
-        onCancel={handleTaskModalCancel}
-      >
-        <TaskModal task={selectedTask} tasks={data}/>
-      </Modal>
+
+      {/* Table component */}
       <Table
         columns={columns}
-        dataSource={data}
+        rowKey={(record) => record.id}
+        expandable={{
+          expandedRowRender: (record) => <TaskDetails task={record} />,
+          rowExpandable: (record) => {
+            return record.name !== "Not Expandable";
+          },
+        }}
+        dataSource={tasksData}
         pagination={{ position: ["bottomLeft"] }}
       />
+
     </>
   );
 };

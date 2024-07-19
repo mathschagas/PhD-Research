@@ -1,0 +1,190 @@
+[
+    {
+        "id": 1,
+        "name": "Deliver Package",
+        "description": "Deliver a package from the current location to the target location.",
+        "context_descriptors": [
+            {
+                "name": "current_location_lat",
+                "type": "string"
+            },
+            {
+                "name": "current_location_lon",
+                "type": "string"
+            },
+            {
+                "name": "target_location_lat",
+                "type": "string"
+            },
+            {
+                "name": "target_location_lon",
+                "type": "string"
+            }
+        ],
+        "scenarios": [
+            {	
+                "name": "default",
+                "constraints": [
+                    {
+                        "name": "time_to_deliver",
+                        "operator": "less",
+                        "value": 60,
+                        "weight": 2
+                    },
+                    {
+                        "name": "price",
+                        "operator": "less",
+                        "value": 500,
+                        "weight": 1
+                    }
+                ],
+                "cbr_attributes": [
+                    {
+                        "name": "rating",
+                        "type": "max",
+                        "weight": 1
+                    },
+                    {
+                        "name": "time_to_deliver",
+                        "type": "min",
+                        "weight": 2
+                    },
+                    {
+                        "name": "price",
+                        "type": "min",
+                        "weight": 1
+                    }
+                ]                        
+            },
+            {	
+                "name": "fragile",
+                "constraints": [
+                    {
+                        "name": "time_to_deliver",
+                        "operator": "less",
+                        "value": 60,
+                        "weight": 2
+                    },
+                    {
+                        "name": "price",
+                        "operator": "less",
+                        "value": 1000,
+                        "weight": 1
+                    }
+                ],
+                "cbr_attributes": [
+                    {
+                        "name": "rating",
+                        "type": "max",
+                        "weight": 2
+                    },
+                    {
+                        "name": "time_to_deliver",
+                        "type": "min",
+                        "weight": 2
+                    },
+                    {
+                        "name": "price",
+                        "type": "min",
+                        "weight": 1
+                    }
+                ]                        
+            },
+            {	
+                "name": "raining",
+                "constraints": [
+                    {
+                        "name": "time_to_deliver",
+                        "operator": "less",
+                        "value": 60,
+                        "weight": 2
+                    },
+                    {
+                        "name": "price",
+                        "operator": "less",
+                        "value": 1000,
+                        "weight": 1
+                    }
+                ],
+                "cbr_attributes": [
+                    {
+                        "name": "rating",
+                        "type": "max",
+                        "weight": 1
+                    },
+                    {
+                        "name": "safe_to_rain",
+                        "type": "max",
+                        "weight": 3
+                    },
+                    {
+                        "name": "time_to_deliver",
+                        "type": "min",
+                        "weight": 2
+                    },
+                    {
+                        "name": "price",
+                        "type": "min",
+                        "weight": 1
+                    }
+                ]
+            }
+
+        ]
+    },
+    {
+        "id": 2,
+        "name": "Sound alert medicine time",
+        "description": "Send an sound alert to the user to take the medicine at the right time",
+        "context_descriptors": [
+            {
+                "name": "current_time",
+                "type": "string"
+            },
+            {
+                "name": "scheduled_time",
+                "type": "string"
+            },
+            {
+                "name": "user_position",
+                "type": "string"
+            }
+        ],
+        "scenarios": [
+            {	
+                "name": "default",
+                "constraints": [
+                    {
+                        "name": "distance_to_user",
+                        "operator": "less",
+                        "value": 10,
+                        "weight": 2
+                    },
+                    {
+                        "name": "notification_sound_volume",
+                        "operator": "geq",
+                        "value": 5,
+                        "weight": 1
+                    }
+                ],
+                "cbr_attributes": [
+                    {
+                        "name": "notification_sound_volume",
+                        "type": "max",
+                        "weight": 1
+                    },
+                    {
+                        "name": "current_battery_level",
+                        "type": "max",
+                        "weight": 1
+                    },
+                    {
+                        "name": "distance_to_user",
+                        "type": "min",
+                        "weight": 2
+                    }
+                ]                        
+            }
+        ]
+    }
+]

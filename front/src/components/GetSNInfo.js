@@ -1,100 +1,135 @@
-import React, { useState } from "react";
-import { Space, Table, Tag, Button, FloatButton, Tooltip, Modal, Typography } from "antd";
+import React, { useState, useEffect } from "react";
 import {
-  DeleteOutlined,
-  SyncOutlined,
-  PlusCircleOutlined,
-  EditOutlined,
-} from "@ant-design/icons";
-import AddComponentForm from "./ComponentModal";
+  Space,
+  Table,
+  Tag,
+  Button,
+  FloatButton,
+  Tooltip,
+  Card,
+  Spin,
+} from "antd";
+import { SyncOutlined, UnorderedListOutlined } from "@ant-design/icons";
+import axios from "axios";
 
 function GetSNInfo() {
   const columns = [
     {
+      align: "center",
+      width: "5px",
       title: "ID",
-      dataIndex: "id",
+      dataIndex: "port",
       key: "id",
-      render: (id) => id,
+      render: (port) => port,
     },
     {
-      title: "CBR",
-      dataIndex: "cbr",
-      key: "cbr",
-      render: cbr => (
-        <Typography.Paragraph copyable>
-          {/* <pre>{JSON.stringify(cbr, null, 2)}</pre> */}
-          {JSON.stringify(cbr, null, 2)}
-        </Typography.Paragraph>
-      )
+      align: "center",
+      width: "10px",
+      title: "Name",
+      dataIndex: "name",
+      key: "name",
+      render: (name) => name,
     },
     {
-      title: "Status",
-      key: "status",
-      dataIndex: "status",
-      render: (status) => (
-              <Tag color={status === "available" ? "green" : "volcano"} key={status}>
-                {status.toUpperCase()}
-              </Tag>
-            ),
+      align: "center",
+      width: "10px",
+      title: "Availability",
+      key: "availability",
+      dataIndex: "availability",
+      render: (availability, record) => (
+        <div style={{ display: "inline-block" }}>
+          <Space size="small" direction="vertical">
+            <Tag
+              color={
+                record.registered_tasks && record.registered_tasks.length > 0
+                  ? "cyan"
+                  : "warning"
+              }
+            >
+              {record.registered_tasks && record.registered_tasks.length > 0
+                ? "REGISTERED"
+                : "UNREGISTERED"}
+            </Tag>
+            <Tag
+              color={
+                availability === "available"
+                  ? "green"
+                  : availability === "unavailable"
+                  ? "volcano"
+                  : "default"
+              }
+              key={availability}
+            >
+              {availability.toUpperCase()}
+            </Tag>
+          </Space>
+        </div>
+      ),
     },
     {
+      align: "center",
+      title: "Tasks",
+      dataIndex: "registered_tasks",
+      key: "tasks",
+      render: (tasks) => {
+        const removeDescription = (obj) => {
+          if (Array.isArray(obj)) {
+            return obj.map(removeDescription);
+          } else if (typeof obj === "object" && obj !== null) {
+            const { description, ...rest } = obj;
+            return Object.fromEntries(
+              Object.entries(rest).map(([key, value]) => [
+                key,
+                removeDescription(value),
+              ])
+            );
+          }
+          return obj;
+        };
+
+        const tasksWithoutDescription = tasks.map(removeDescription);
+
+        return (
+          <Card align="left" style={{ overflow: "auto", maxHeight: "100px" }}>
+            <pre>{JSON.stringify(tasksWithoutDescription, null, 2)}</pre>
+          </Card>
+        );
+      },
+    },
+    {
+      align: "center",
+      width: "10px",
       title: "Action",
       key: "action",
       render: (_, record) => (
         <Space size="middle">
-          <Button onClick={() => showComponentModal('update')}>
-            <EditOutlined />
-          </Button>
           <Button>
-            <SyncOutlined />
-          </Button>
-          <Button onClick={() => deleteRow(record.key)}>
-            <DeleteOutlined />
+            <UnorderedListOutlined />
           </Button>
         </Space>
       ),
     },
   ];
-  const example_data = [
-    {
-      key: "1",
-      id: "A",
-      cbr: JSON.parse('{"name":"John", "age":30, "city":"New York"}'),
-      status: "available",
-    },
-    {
-      key: "2",
-      id: "B",
-      cbr: JSON.parse('{"name":"John", "age":30, "city":"New York"}'),
-      status: "unavailable",
-    },
-    {
-      key: "3",
-      id: "C",
-      cbr: JSON.parse('{"name":"John", "age":30, "city":"New York"}'),
-      status: "available",
-    },
-  ];
 
-  const [data, setData] = useState(example_data);
-  const [componentModal, setComponentModal] = useState({ isOpen: false, type: null });
+  const [isLoading, setIsLoading] = useState(false);
+  const [data, setData] = useState([]);
 
-  const showComponentModal = (type) => {
-    setComponentModal({ isOpen: true, type });
-  }
+  const fetchData = async () => {
+    setIsLoading(true);
+    try {
+      const response = await axios.get("http://127.0.0.1:5001/get_data");
+      console.log("Data fetched successfully:", response.data);
+      setData(response.data);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      setData([]);
+    }
+    setIsLoading(false);
+  };
 
-  const handleComponentModalOk = () => {
-    setComponentModal({ ...componentModal, isOpen: false });
-  }
-
-  const handleComponentModalCancel = () => {
-    setComponentModal({ ...componentModal, isOpen: false });
-  }
-
-  // Function to delete a row
-  function deleteRow(key) {
-    setData(data.filter((item) => item.key !== key));
-  }
+  useEffect(() => {
+    fetchData();
+  }, []); // Add dependencies if any
 
   return (
     <>
@@ -104,21 +139,18 @@ function GetSNInfo() {
           right: 24,
         }}
       >
-        <Tooltip title="Add New Component" placement="left">
-          <FloatButton
-            type="primary"
-            icon={<PlusCircleOutlined />}
-            onClick={() => showComponentModal('add')}
-          />
-        </Tooltip>
-
-        <Tooltip title="Refresh data" placement="left">
-          <FloatButton type="primary" icon={<SyncOutlined />} />
-        </Tooltip>
+        {isLoading ? (
+          <Spin />
+        ) : (
+          <Tooltip title="Refresh data" placement="left">
+            <FloatButton
+              type="primary"
+              icon={<SyncOutlined />}
+              onClick={fetchData}
+            />
+          </Tooltip>
+        )}
       </FloatButton.Group>
-      <Modal title={componentModal.type === "add" ? "Add New Component" : "Update Component"} open={componentModal.isOpen} onOk={handleComponentModalOk} onCancel={handleComponentModalCancel}>
-        <AddComponentForm />
-      </Modal>
       <Table
         columns={columns}
         dataSource={data}

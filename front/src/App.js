@@ -2,11 +2,13 @@ import React, { useState } from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { Layout, Menu, ConfigProvider, theme } from "antd";
-import { HomeOutlined, TableOutlined, ApartmentOutlined, BarsOutlined } from "@ant-design/icons";
+import { HomeOutlined, TableOutlined, ExportOutlined, BarsOutlined } from "@ant-design/icons";
 import GetSNInfo from "./components/GetSNInfo";
 import ModelTest from "./components/ModelTest";
 import Home from "./components/Home";
 import MarketPlace from "./components/MarketPlace";
+import Delegation from "./components/Delegation";
+import EditTaskPage from "./components/EditTaskPage";
 const { Content } = Layout;
 const { Footer, Sider } = Layout;
 
@@ -39,8 +41,8 @@ function App() {
               <Menu.Item key="3" icon={<TableOutlined />}>
                 <Link to="/getSNInfo">Support Network</Link>
               </Menu.Item>
-              <Menu.Item key="4" icon={<ApartmentOutlined />}>
-                <Link to="/modelTest">Model Test</Link>
+              <Menu.Item key="4" icon={<ExportOutlined />}>
+                <Link to="/delegation">Delegation</Link>
               </Menu.Item>
             </Menu>
           </Sider>
@@ -62,6 +64,9 @@ function App() {
                   <Route path="/getSNInfo" element={<GetSNInfo />} />
                   <Route path="/modelTest" element={<ModelTest />} />
                   <Route path="/marketplace" element={<MarketPlace />} />
+                  <Route path="/marketplace/new_task" element={<EditTaskPage />} />
+                  <Route path="/marketplace/edit_task/:taskId" element={<EditTaskPage />} />  
+                  <Route path="/delegation" element={<Delegation />} />
                 </Routes>
               </div>
             </Content>

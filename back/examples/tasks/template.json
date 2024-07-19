@@ -6,7 +6,7 @@
             {
                 "name": "<context_descriptor_name>",
                 "description": "<context_descriptor_description>",
-                "type": "string|integer|float|boolean"
+                "type": "string|integer|float|boolean|list"
             },
             {
                 "name": "<context_descriptor_name>",
@@ -16,36 +16,40 @@
         ],
         "default_constraints": [
             {
-                "name": "<constraint_name>",
-                "logical_expression": "<condition_id> AND|OR|XOR|NOT|NAND|NOR|XNOR <condition_id>",
-                "conditions": [
+                "constraints": [
                     {
-                        "condition_id": "<condition_id>",
-                        "attribute": "<attribute_name>",
+                        "constraint_id": "<constraint_id>",
+                        "name": "<attribute_name>",
                         "condition_operator": "greater|less|geq|leq|eq|neq|in|nin",
+                        "type": "<constant|constraint>",
                         "value": "<atr_value>|<attribute_name>"        
                     },
                     {
-                        "condition_id": "<condition_id>",
-                        "attribute": "<attribute_name>",
+                        "constraint_id": "<constraint_id>",
+                        "name": "<attribute_name>",
                         "condition_operator": "greater|less|geq|leq|eq|neq|in|nin",
+                        "type": "<constant|constraint>",
                         "value": "<atr_value>|<attribute_name>"        
                     }
-                ]
+                ],
+                "logical_expression": "<constraint_id> AND|OR <constraint_id>"
             }
         ],
         "default_cbr": [
             {
-                "<attribute_1_name>": "<attribute_1_weight>",
-                "<max_or_min>": "max|min"
+                "name": "<attribute_name>",
+                "weight": "<attribute_weight>",
+                "max_or_min": "max|min"
             },
             {
-                "<attribute_2>": "<attribute_2_weight>",
-                "<max_or_min>": "max|min"
+                "name": "<attribute_name>",
+                "weight": "<attribute_weight>",
+                "max_or_min": "max|min"
             },
             {
-                "<attribute_3>": "<attribute_3_weight>",
-                "<max_or_min>": "max|min"
+                "name": "<attribute_name>",
+                "weight": "<attribute_weight>",
+                "max_or_min": "max|min"
             }
         ],
         "uncertainty_runtime_cbr": [
