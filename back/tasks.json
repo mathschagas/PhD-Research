@@ -23,31 +23,26 @@
         ],
         "scenarios": [
             {	
-                "name": "default",
+                "name": "Default",
                 "constraints": [
                     {
                         "name": "time_to_deliver",
                         "operator": "less",
-                        "value": 60,
-                        "weight": 2
+                        "value": 120,
+                        "weight": 1
                     },
                     {
                         "name": "price",
                         "operator": "less",
-                        "value": 500,
+                        "value": 100,
                         "weight": 1
                     }
                 ],
                 "cbr_attributes": [
                     {
-                        "name": "rating",
-                        "type": "max",
-                        "weight": 1
-                    },
-                    {
                         "name": "time_to_deliver",
                         "type": "min",
-                        "weight": 2
+                        "weight": 1
                     },
                     {
                         "name": "price",
@@ -57,31 +52,26 @@
                 ]                        
             },
             {	
-                "name": "fragile",
+                "name": "Fragile",
                 "constraints": [
                     {
                         "name": "time_to_deliver",
                         "operator": "less",
-                        "value": 60,
-                        "weight": 2
+                        "value": 120,
+                        "weight": 1
                     },
                     {
                         "name": "price",
                         "operator": "less",
-                        "value": 1000,
+                        "value": 100,
                         "weight": 1
                     }
                 ],
                 "cbr_attributes": [
                     {
-                        "name": "rating",
-                        "type": "max",
-                        "weight": 2
-                    },
-                    {
                         "name": "time_to_deliver",
                         "type": "min",
-                        "weight": 2
+                        "weight": 1
                     },
                     {
                         "name": "price",
@@ -91,36 +81,31 @@
                 ]                        
             },
             {	
-                "name": "raining",
+                "name": "Raining",
                 "constraints": [
                     {
                         "name": "time_to_deliver",
                         "operator": "less",
-                        "value": 60,
-                        "weight": 2
+                        "value": 120,
+                        "weight": 1
                     },
                     {
                         "name": "price",
                         "operator": "less",
-                        "value": 1000,
+                        "value": 100,
                         "weight": 1
                     }
                 ],
                 "cbr_attributes": [
-                    {
-                        "name": "rating",
-                        "type": "max",
-                        "weight": 1
-                    },
                     {
                         "name": "safe_to_rain",
                         "type": "max",
-                        "weight": 3
+                        "weight": 2
                     },
                     {
                         "name": "time_to_deliver",
                         "type": "min",
-                        "weight": 2
+                        "weight": 1
                     },
                     {
                         "name": "price",

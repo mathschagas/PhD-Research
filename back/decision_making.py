@@ -21,20 +21,30 @@ def get_component_estimate(component, task):
     else:
         return None
     
-def calculate_weighted_scores(task, estimates):
+def find_scenario_by_name(scenarios, selectedScenario):
+    for scenario in scenarios:
+        if scenario['name'] == selectedScenario:
+            return scenario
+    return None
+
+def normalize(value, min_value, max_value, minimize=False):
+    normalized = (value - min_value) / (max_value - min_value)
+    return normalized if minimize else 1 - normalized
+
+def calculate_weighted_scores(task, selectedScenario, estimates):
     # Initialize scores list
     scores = []
 
+    matching_scenario = find_scenario_by_name(task['scenarios'], selectedScenario)
+    if not matching_scenario:
+        return scores
+    
     # Iterate over each attribute in the task
-    for attribute in task['cbr_attributes']:
+    for attribute in matching_scenario['cbr_attributes']:
         # Get attribute details
         name = attribute['name']
         weight = attribute['weight']
-        max_or_min = attribute['max_or_min']
-
-        # If the attribute is 'rating', skip it
-        if name == 'rating':
-            continue
+        max_or_min = attribute['type']
 
         # Collect all estimates for this attribute
         all_estimates = [component['cbr'][name] for component in estimates]
@@ -46,24 +56,49 @@ def calculate_weighted_scores(task, estimates):
         # Iterate over each component in estimates
         for component in estimates:
             # Get the estimate value for this attribute from the component
-            estimate_value = component['cbr'][name]
+            estimated_value = component['cbr'][name]
 
             # Normalize the estimate value
-            if max_or_min == 'min':
-                # For minimization, subtract the min value and divide by the range
-                normalized_value = (estimate_value - min_value) / (max_value - min_value) if max_value != min_value else 0
-            else:
-                # For maximization, subtract the min value and divide by the range
-                normalized_value = (estimate_value - min_value) / (max_value - min_value) if max_value != min_value else 1
+            normalized_value = normalize(estimated_value, min_value, max_value, max_or_min == 'min')
 
             # Add the weighted attribute to the score
             component['score'] = component.get('score', 0) + weight * normalized_value
 
+            for constraint in matching_scenario['constraints']:
+                # Get constraint details
+                name = constraint['name']
+                print(name)
+                operator = constraint['operator']
+                value = constraint['value']
+                weight = constraint['weight']
+
+                estimated_value = float(estimated_value)
+                value = float(value)
+
+                raw_penalty = 0
+                # Determine the penalty for each constraint
+                if operator == 'less' and estimated_value >= value:
+                    raw_penalty =  abs(estimated_value - value)
+                elif operator == 'greater' and estimated_value <= value:
+                    raw_penalty =  abs(estimated_value - value)
+                elif operator == 'lessOrEqual' and estimated_value > value:
+                    raw_penalty =  abs(estimated_value - value)
+                elif operator == 'greaterOrEqual' and estimated_value < value:
+                    raw_penalty =  abs(estimated_value - value)
+                elif operator == 'equal' and value != estimated_value:
+                    raw_penalty =  1
+                elif operator == 'notEqual' and value == estimated_value:
+                    raw_penalty =  1
+                
+                if 'raw_penalty' not in component:
+                   component['raw_penalty'] = {}
+                component['raw_penalty'][name] = raw_penalty
+
     # Build scores list
     for component in estimates:
-        scores.append({"name": component['name'], "score": component['score']})
+        scores.append({"name": component['name'], "score": component['score'] + component.get('raw_penalty', {}).get('price', 0)})
 
-    return sorted(scores, key=lambda x: x['score'], reverse=True)
+    return sorted(scores, key=lambda x: x['score'], reverse=False)
 
 def calculate_delegation_cbr_score(task):
 
@@ -89,10 +124,7 @@ def calculate_delegation_cbr_score(task):
         for comp in available_components
     ]
 
-    # Filter out components that present estimates that violate the constraints
-    # valid_components = [comp for comp, est in zip(available_components, estimates) if est <= constraints]
-
     # Calculate score for each remaining component
-    scores = calculate_weighted_scores(task_data, estimates)
+    scores = calculate_weighted_scores(task_data, task['scenario'], estimates)
     # print(scores)
     return scores

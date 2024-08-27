@@ -1,5 +1,4 @@
 import json
-import random
 import colorlog
 import logging
 import threading
@@ -71,12 +70,11 @@ class SupportNetworkManager:
             logger.info("Retrieving data from Support Network Component: " + json.dumps(self.data))
             return jsonify(self.data)
         
-        @self.app.route('/request_delegation', methods=['GET'])
-        def decision_making():
-            # task = request.get_json()
-            task = {'id': 1}
+        @self.app.route('/request_delegation/<selectedTask>/<selectedScenario>', methods=['GET'])
+        def decision_making(selectedTask, selectedScenario):
+            task = {'id': selectedTask, 'scenario': selectedScenario}
             score = calculate_delegation_cbr_score(task)
-            return jsonify(score)  
+            return jsonify(score)
 
     # Function to send logs every 10 seconds
     def send_update_logs(self):
