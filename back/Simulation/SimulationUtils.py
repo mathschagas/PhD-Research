@@ -21,7 +21,7 @@ def random_position_within_london_30km():
     central_london = (51.5074, -0.1278)  # Latitude and Longitude of London
     R = 6371  # Radius of the Earth in km
     # Generate a random distance in km up to the maximum allowed
-    distance = random.uniform(0, 15) / R  # Convert the distance to radians
+    distance = random.uniform(5, 15) / R  # Convert the distance to radians
     # Generate a random angle
     angle = random.uniform(0, 2 * math.pi)
     # Latitude and Longitude of the central point in radians
@@ -38,7 +38,7 @@ def random_position_within_london_30km():
     return new_lat, new_lon
 
 
-def calculate_distance(self, x1, y1, x2, y2):
+def calculate_distance(x1, y1, x2, y2):
     # Using the Haversine formula for a more accurate distance calculation
     R = 6371  # Radius of the Earth in km
     lat1, lon1 = math.radians(x1), math.radians(y1)

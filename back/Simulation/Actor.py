@@ -1,12 +1,16 @@
 import math
 import time
 
+from SimulationUtils import calculate_distance
+
 class Actor:
-    def __init__(self, id, start_x, start_y, speed_kmh):
+    def __init__(self, id, start_x, start_y, speed_kmh, cost_per_km = 0, reliability = 0):
         self.id = id
         self.x = start_x
         self.y = start_y
         self.speed_kmh = speed_kmh  # Speed in km/h
+        self.cost_per_km = cost_per_km  # Custo por km
+        self.reliability = reliability  # Confiabilidade
         self.total_distance = 0
         self.distance_traveled = 0
         self.start_time = time.time()
@@ -18,7 +22,7 @@ class Actor:
         distance_to_move = (self.speed_kmh / 3600) * time_interval  # Convert speed to km/s and multiply by time interval
 
         # Calculate the direction vector towards the target
-        distance_to_target = self.calculate_distance(self.x, self.y, target_x, target_y)
+        distance_to_target = calculate_distance(self.x, self.y, target_x, target_y)
 
         # Check if the actor is close enough to the destination to stop
         if distance_to_target <= distance_to_move:
@@ -34,7 +38,7 @@ class Actor:
         self.y += ratio * (target_y - self.y)
 
         # Calculate the distance moved in this iteration
-        distance_moved = self.calculate_distance(previous_x, previous_y, self.x, self.y)
+        distance_moved = calculate_distance(previous_x, previous_y, self.x, self.y)
         self.distance_traveled += distance_moved
 
         elapsed_time = time.time() - self.start_time
@@ -50,7 +54,7 @@ class Actor:
         return False  # Indicates that the actor has not reached the destination
 
     def estimated_time_to_arrival(self, target_x, target_y):
-        remaining_distance = self.calculate_distance(self.x, self.y, target_x, target_y)
+        remaining_distance = calculate_distance(self.x, self.y, target_x, target_y)
         if self.speed_kmh > 0:
             # Estimate time to arrival in hours and convert to seconds
             return (remaining_distance / self.speed_kmh) * 3600

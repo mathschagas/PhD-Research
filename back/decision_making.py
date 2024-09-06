@@ -8,11 +8,20 @@ def get_task(task_id):
         return None
     
 def get_component_info(component):
+    response = http_requests.get(f"http://127.0.0.1:5001/components/{component['id']}/info")
+    if response.status_code == 200:
+        return response.json()['component']
+    else:
+        return None
+
+# get component info for not mocked components
+def _get_component_info(component):
     response = http_requests.get(f"http://127.0.0.1:{component['port']}/info")
     if response.status_code == 200:
         return response.json()['component']
     else:
         return None
+
 
 def get_component_estimate(component, task):
     response = http_requests.get(f"http://127.0.0.1:{component['port']}/estimate")
@@ -20,7 +29,22 @@ def get_component_estimate(component, task):
         return response.json()['cbr']
     else:
         return None
+
+def get_component_quote(component, lat1, lon1, lat2, lon2):
+    url = (
+        f"http://127.0.0.1:5001/components/{component['id']}/quote"
+        f"?lat1={lat1}&lon1={lon1}"
+        f"&lat2={lat2}&lon2={lon2}"
+    )
     
+    response = http_requests.get(url)
+    
+    if response.status_code == 200:
+        return response.json().get('cbr')
+    else:
+        return None
+
+
 def find_scenario_by_name(scenarios, selectedScenario):
     for scenario in scenarios:
         if scenario['name'] == selectedScenario:
@@ -28,10 +52,13 @@ def find_scenario_by_name(scenarios, selectedScenario):
     return None
 
 def normalize(value, min_value, max_value, minimize=False):
-    normalized = (value - min_value) / (max_value - min_value)
-    return normalized if minimize else 1 - normalized
+    if max_value == min_value:
+        return 0
+    else:
+        normalized = (value - min_value) / (max_value - min_value)
+        return normalized if minimize else 1 - normalized
 
-def calculate_weighted_scores(task, selectedScenario, estimates):
+def calculate_weighted_scores(task, selectedScenario, quotes):
     # Initialize scores list
     scores = []
 
@@ -47,14 +74,14 @@ def calculate_weighted_scores(task, selectedScenario, estimates):
         max_or_min = attribute['type']
 
         # Collect all estimates for this attribute
-        all_estimates = [component['cbr'][name] for component in estimates]
+        all_estimates = [component['cbr'][name] for component in quotes]
 
         # Calculate min and max values
         min_value = min(all_estimates)
         max_value = max(all_estimates)
 
         # Iterate over each component in estimates
-        for component in estimates:
+        for component in quotes:
             # Get the estimate value for this attribute from the component
             estimated_value = component['cbr'][name]
 
@@ -64,39 +91,44 @@ def calculate_weighted_scores(task, selectedScenario, estimates):
             # Add the weighted attribute to the score
             component['score'] = component.get('score', 0) + weight * normalized_value
 
-            for constraint in matching_scenario['constraints']:
-                # Get constraint details
-                name = constraint['name']
-                print(name)
-                operator = constraint['operator']
-                value = constraint['value']
-                weight = constraint['weight']
+    # Iterate over each constraint in the task
+    for constraint in matching_scenario['constraints']:
+        # Get constraint details
+        name = constraint['name']
+        operator = constraint['operator']
+        value = constraint['value']
+        weight = constraint['weight']
 
-                estimated_value = float(estimated_value)
-                value = float(value)
+        for component in quotes:
+            estimated_value = float(component['cbr'][name])
+            value = float(value)
 
-                raw_penalty = 0
-                # Determine the penalty for each constraint
-                if operator == 'less' and estimated_value >= value:
-                    raw_penalty =  abs(estimated_value - value)
-                elif operator == 'greater' and estimated_value <= value:
-                    raw_penalty =  abs(estimated_value - value)
-                elif operator == 'lessOrEqual' and estimated_value > value:
-                    raw_penalty =  abs(estimated_value - value)
-                elif operator == 'greaterOrEqual' and estimated_value < value:
-                    raw_penalty =  abs(estimated_value - value)
-                elif operator == 'equal' and value != estimated_value:
-                    raw_penalty =  1
-                elif operator == 'notEqual' and value == estimated_value:
-                    raw_penalty =  1
-                
-                if 'raw_penalty' not in component:
-                   component['raw_penalty'] = {}
-                component['raw_penalty'][name] = raw_penalty
+            raw_penalty = 0
+
+            # Determine the penalty for each constraint
+            if operator == 'less' and estimated_value >= value:
+                raw_penalty =  1
+            elif operator == 'greater' and estimated_value <= value:
+                raw_penalty =  1
+            elif operator == 'lessOrEqual' and estimated_value > value:
+                raw_penalty =  1
+            elif operator == 'greaterOrEqual' and estimated_value < value:
+                raw_penalty =  1
+            elif operator == 'equal' and value != estimated_value:
+                raw_penalty =  1
+            elif operator == 'notEqual' and value == estimated_value:
+                raw_penalty =  1
+            
+            if 'raw_penalty' not in component:
+                component['raw_penalty'] = {}
+            component['raw_penalty'][name] = raw_penalty
 
     # Build scores list
-    for component in estimates:
-        scores.append({"name": component['name'], "score": component['score'] + component.get('raw_penalty', {}).get('price', 0)})
+    for component in quotes:
+        score = component['score'] 
+        for penalty in component.get('raw_penalty', {}).values():
+            score += penalty
+        scores.append({"type": component['type'], "id": component['id'], "score": score, "cbr": component['cbr'], "raw_penalty": component.get('raw_penalty', {})})
 
     return sorted(scores, key=lambda x: x['score'], reverse=False)
 
@@ -115,16 +147,25 @@ def calculate_delegation_cbr_score(task):
     available_components = [comp for comp in registered_components if comp.get('availability') == 'available']
 
     # Request estimates for the available components
-    estimates = [
+    # estimates = [
+    #     {
+    #         "name": comp['name'],
+    #         "port": comp['port'],
+    #         "cbr": get_component_estimate(comp, task_data['id'])
+    #     } 
+    #     for comp in available_components
+    # ]
+
+    quotes = [
         {
-            "name": comp['name'],
-            "port": comp['port'],
-            "cbr": get_component_estimate(comp, task_data['id'])
+            "type": comp['type'],
+            "id": comp['id'],
+            "cbr": get_component_quote(comp, task['start_location']['lat'], task['start_location']['lon'], task['end_location']['lat'], task['end_location']['lon'])
         } 
         for comp in available_components
     ]
 
     # Calculate score for each remaining component
-    scores = calculate_weighted_scores(task_data, task['scenario'], estimates)
+    scores = calculate_weighted_scores(task_data, task['scenario'], quotes)
     # print(scores)
     return scores

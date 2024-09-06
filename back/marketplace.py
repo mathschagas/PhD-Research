@@ -59,7 +59,7 @@ class marketplace:
             updated_tasks = request.get_json()
             for updated_task in updated_tasks:
                 for i, existing_task in enumerate(self.tasks):
-                    if existing_task['id'] == updated_task['id']:
+                    if str(existing_task['id']) == str(updated_task['id']):
                         # Check if 'registered_components' is in updated_task
                         if 'registered_components' in updated_task:
                             # Check if 'registered_components' exists in self.tasks[i]

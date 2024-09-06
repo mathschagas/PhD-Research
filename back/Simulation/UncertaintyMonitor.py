@@ -1,45 +1,29 @@
-import random
-
-chance_of_failure = 0.10
-
 class UncertaintyMonitor:
     def __init__(self):
         self.conditions = {
+            "internal_failure_drone": False,
+            "internal_failure_car": False,
             "bad_weather": False,
-            "restricted_airspace": False,
-            "sensor_failure": False,
-            "traffic": False,
-            "mechanical_issue": False
+            "restricted_area": False,
+            "traffic_jam": False
         }
         self.current_actor = None
 
     def set_actor(self, actor_type):
         self.current_actor = actor_type
-        # Reset the relevant conditions
-        if actor_type == "Drone1":
-            self.conditions.update({
-                "bad_weather": False,
-                "restricted_airspace": False,
-                "sensor_failure": False
-            })
-        elif actor_type == "Car1":
-            self.conditions.update({
-                "traffic": False,
-                "mechanical_issue": False
-            })
+        # TODO: set the relevant conditions based on the actor type
+        for key in self.conditions.keys():
+            self.conditions[key] = False
 
-    def detect_uncertainties(self):
-        # Simulate the random detection of uncertainties
-        if self.current_actor == "Drone1":
-            self.conditions["bad_weather"] = random.random() < chance_of_failure
-            self.conditions["restricted_airspace"] = random.random() < chance_of_failure
-            self.conditions["sensor_failure"] = random.random() < chance_of_failure
-        elif self.current_actor == "Car1":
-            self.conditions["traffic"] = random.random() < chance_of_failure
-            self.conditions["mechanical_issue"] = random.random() < chance_of_failure
+    def force_uncertainty(self, uncertainty):
+        # Force the specified uncertainty to occur
+        for key in self.conditions.keys():
+            self.conditions[key] = False
+        self.conditions[uncertainty] = True
 
     def report(self, lat, lon):
         print(f"\nCurrent Conditions for {self.current_actor}:")
+        # TODO: randomize chances of each condition that affects the actor
         for condition, state in self.conditions.items():
             if state:
                 print(f"  {condition}: Yes")
