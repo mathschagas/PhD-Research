@@ -28,13 +28,13 @@
                     {
                         "name": "time_to_deliver",
                         "operator": "less",
-                        "value": 120,
+                        "value": 60,
                         "weight": 1
                     },
                     {
                         "name": "price",
                         "operator": "less",
-                        "value": 100,
+                        "value": 50,
                         "weight": 1
                     }
                 ],
@@ -113,62 +113,41 @@
                         "weight": 1
                     }
                 ]
-            }
-
-        ]
-    },
-    {
-        "id": 2,
-        "name": "Sound alert medicine time",
-        "description": "Send an sound alert to the user to take the medicine at the right time",
-        "context_descriptors": [
-            {
-                "name": "current_time",
-                "type": "string"
             },
-            {
-                "name": "scheduled_time",
-                "type": "string"
-            },
-            {
-                "name": "user_position",
-                "type": "string"
-            }
-        ],
-        "scenarios": [
             {	
-                "name": "default",
+                "name": "Fragile_Raining",
                 "constraints": [
                     {
-                        "name": "distance_to_user",
+                        "name": "time_to_deliver",
                         "operator": "less",
-                        "value": 10,
-                        "weight": 2
+                        "value": 60,
+                        "weight": 3
                     },
                     {
-                        "name": "notification_sound_volume",
-                        "operator": "geq",
-                        "value": 5,
+                        "name": "price",
+                        "operator": "less",
+                        "value": 50,
                         "weight": 1
-                    }
+                    },
+                    {
+                        "name": "safe_to_rain",
+                        "operator": "equal",
+                        "value": 1,
+                        "weight": 4
+                    }                    
                 ],
                 "cbr_attributes": [
                     {
-                        "name": "notification_sound_volume",
-                        "type": "max",
-                        "weight": 1
-                    },
-                    {
-                        "name": "current_battery_level",
-                        "type": "max",
-                        "weight": 1
-                    },
-                    {
-                        "name": "distance_to_user",
+                        "name": "time_to_deliver",
                         "type": "min",
-                        "weight": 2
+                        "weight": 1
+                    },
+                    {
+                        "name": "price",
+                        "type": "min",
+                        "weight": 1
                     }
-                ]                        
+                ]
             }
         ]
     }

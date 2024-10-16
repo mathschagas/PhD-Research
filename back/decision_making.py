@@ -61,6 +61,7 @@ def normalize(value, min_value, max_value, minimize=False):
 def calculate_weighted_scores(task, selectedScenario, quotes):
     # Initialize scores list
     scores = []
+    components_to_remove = []
 
     matching_scenario = find_scenario_by_name(task['scenarios'], selectedScenario)
     if not matching_scenario:
@@ -123,12 +124,25 @@ def calculate_weighted_scores(task, selectedScenario, quotes):
                 component['raw_penalty'] = {}
             component['raw_penalty'][name] = raw_penalty
 
-    # Build scores list
+            # Remove the component if the special constraint is not satisfied
+            if weight == 999 and raw_penalty == 1:
+                components_to_remove.append(component)
+            else:
+                # Apply the penalty by adding the weighted penalty from the score
+                component['score'] += raw_penalty * weight
+
+    # Remove the components that violated constraints with weight 999
+    quotes = [comp for comp in quotes if comp not in components_to_remove]
+
+    # Build final scores list
     for component in quotes:
-        score = component['score'] 
-        for penalty in component.get('raw_penalty', {}).values():
-            score += penalty
-        scores.append({"type": component['type'], "id": component['id'], "score": score, "cbr": component['cbr'], "raw_penalty": component.get('raw_penalty', {})})
+        scores.append({
+            "type": component['type'],
+            "id": component['id'],
+            "score": component['score'],
+            "cbr": component['cbr'],
+            "raw_penalty": component.get('raw_penalty', {})
+        })
 
     return sorted(scores, key=lambda x: x['score'], reverse=False)
 

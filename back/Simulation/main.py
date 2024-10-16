@@ -1,19 +1,23 @@
 import time
 import requests
-from SimulationUtils import random_position_within_london_30km, calculate_distance
+from SimulationUtils import calculate_distance
 from UncertaintyMonitor import UncertaintyMonitor
 from actor import Actor
 import csv
 import json
+from datetime import datetime
 import random
+
+# Output file name for simulation results
+output_file_name = f'simulation_results_{datetime.now().strftime("%d-%m-%Y_%H-%M-%S")}.csv'
 
 # The list of uncertainties to simulate
 uncertainties = [
-    "internal_failure_drone",
-    "internal_failure_car",
+    # "internal_failure_drone",
+    # "internal_failure_car",
     "bad_weather",
-    "restricted_area",
-    "traffic_jam"
+    # "restricted_area",
+    # "traffic_jam"
 ]
 
 # Possible types of components
@@ -35,7 +39,7 @@ component_speeds = {
 }
 
 # Set up CSV to record results with reordered columns
-with open('simulation_results.csv', mode='w', newline='') as file:
+with open(output_file_name, mode='w', newline='') as file:
     writer = csv.writer(file)
     writer.writerow([
         'Simulation_ID', 'Uncertainty_Type', 'Trajectory_Section', 'Actor_ID',
@@ -45,7 +49,7 @@ with open('simulation_results.csv', mode='w', newline='') as file:
 
 def get_best_component_from_support_network(start_x, start_y, target_x, target_y):
     response = requests.get(
-        "http://127.0.0.1:5002/request_delegation/1/Default",
+        "http://127.0.0.1:5002/request_delegation/1/Fragile_Raining",
         params={"lat1": start_x, "lon1": start_y, "lat2": target_x, "lon2": target_y}
     )
     if response.status_code == 200:
@@ -53,6 +57,18 @@ def get_best_component_from_support_network(start_x, start_y, target_x, target_y
         if components:
             best_component_info = components[0]
             return best_component_info['id'], best_component_info['score'], best_component_info['type'], components
+    return None, None, None, None
+
+def get_random_component_from_support_network(start_x, start_y, target_x, target_y):
+    response = requests.get(
+        "http://127.0.0.1:5002/request_delegation/1/Fragile_Raining",
+        params={"lat1": start_x, "lon1": start_y, "lat2": target_x, "lon2": target_y}
+    )
+    if response.status_code == 200:
+        components = response.json()
+        if components:
+            random_component_info = random.choice(components)
+            return random_component_info['id'], random_component_info['score'], random_component_info['type'], components
     return None, None, None, None
 
 # Function to simulate the journey and trigger delegation at a specific section
@@ -96,12 +112,9 @@ def simulate_journey(task, simulation_id, uncertainty, section, actor: Actor, un
             # Get the best component from the support network manager
             best_component_name, best_cbr, best_component_type, ranking = get_best_component_from_support_network(actor.x, actor.y, target_x, target_y)
 
-            # Ensure the best component is valid
             if best_component_name is not None:
-                # Set the speed based on the component type
                 speed_kmh = component_speeds.get(best_component_type, 50.0)
                 
-                # Create the Location Info JSON with distance to target
                 location_info = {
                     "start": {"lat": initial_lat, "lon": initial_lon},
                     "end": {"lat": final_lat, "lon": final_lon},
@@ -109,8 +122,7 @@ def simulate_journey(task, simulation_id, uncertainty, section, actor: Actor, un
                     "distance_to_target_km": round(distance_to_target, 6)
                 }
 
-                # Record the current actor's segment before delegating
-                with open('simulation_results.csv', mode='a', newline='') as file:
+                with open(output_file_name, mode='a', newline='') as file:
                     writer = csv.writer(file)
                     writer.writerow([
                         simulation_id, uncertainty, trajectory_section, actor.id,
@@ -118,7 +130,6 @@ def simulate_journey(task, simulation_id, uncertainty, section, actor: Actor, un
                         delegation_order, json.dumps(ranking), json.dumps(task), "No"
                     ])
 
-                # Continue with the best component
                 best_component = Actor(id=best_component_name, start_x=actor.x, start_y=actor.y, speed_kmh=speed_kmh)
                 uncertainty_monitor.set_actor(best_component.id)
                 delegation_order += 1
@@ -128,6 +139,19 @@ def simulate_journey(task, simulation_id, uncertainty, section, actor: Actor, un
                 final_lat = target_x
                 final_lon = target_y
                 mission_completed = True
+                break
+            else:
+                # Handle the case where no valid component is found (e.g., due to violations of hard constraints)
+                print(f"No valid component found for delegation at ({actor.x:.6f}, {actor.y:.6f})")
+
+                # Record with empty values and "-" for the CBR-dependent fields
+                with open(output_file_name, mode='a', newline='') as file:
+                    writer = csv.writer(file)
+                    writer.writerow([
+                        simulation_id, uncertainty, trajectory_section, actor.id,
+                        "-", "-", ', '.join(components_config['types']), components_config['count'],
+                        delegation_order, "-", json.dumps(task), "No"
+                    ])
                 break
 
         else:
@@ -148,13 +172,14 @@ def simulate_journey(task, simulation_id, uncertainty, section, actor: Actor, un
     location_info["distance_to_target_km"] = 0.0 if mission_completed else distance_to_target
 
     # Record the final actor's segment
-    with open('simulation_results.csv', mode='a', newline='') as file:
+    with open(output_file_name, mode='a', newline='') as file:
         writer = csv.writer(file)
         writer.writerow([
             simulation_id, uncertainty, trajectory_section, 
             best_component.id if 'best_component' in locals() and best_component is not None else actor.id,
-            json.dumps(location_info), best_cbr, ', '.join(components_config['types']), components_config['count'],
-            delegation_order, json.dumps(ranking), json.dumps(task), "Yes" if mission_completed else "No"
+            json.dumps(location_info), best_cbr if best_cbr is not None else "-", 
+            ', '.join(components_config['types']), components_config['count'],
+            delegation_order, json.dumps(ranking if 'ranking' in locals() else "-"), json.dumps(task), "Yes" if mission_completed else "No"
         ])
 
 def uncertainty_affect_car(uncertainty):
@@ -184,13 +209,12 @@ def register_tasks_to_all():
 
     response = requests.get("http://127.0.0.1:5000/tasks/1")
     return response.json()
-    
 
 # Run the simulations
 simulation_id = 1  # Start IDs from 1
 for uncertainty in uncertainties:
     for num_types in range(1, len(component_types)+1):  # Number of types from 1 to 5
-        for count in [1, 5, 10]:  # Number of components of each type
+        for count in [20]:  # Number of components of each type
             if num_types == 1:  # Handle cases with only 1 type
                 if uncertainty_affect_car(uncertainty):
                     components_config = {
@@ -254,4 +278,4 @@ for uncertainty in uncertainties:
                 simulate_journey(task, simulation_id, uncertainty, section, actor, uncertainty_monitor, start_x, start_y, target_x, target_y, components_config, speed_multiplier=1000)
                 simulation_id += 1
 
-print("Simulation completed. Results are saved in 'simulation_results.csv'.")
+print(f"Simulation completed. Results are saved in {output_file_name}.")
