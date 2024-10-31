@@ -2,7 +2,7 @@ import time
 import requests
 from SimulationUtils import calculate_distance
 from UncertaintyMonitor import UncertaintyMonitor
-from actor import Actor
+from Actor import Actor
 import csv
 import json
 from datetime import datetime
@@ -13,11 +13,11 @@ output_file_name = f'simulation_results_{datetime.now().strftime("%d-%m-%Y_%H-%M
 
 # The list of uncertainties to simulate
 uncertainties = [
-    # "internal_failure_drone",
-    # "internal_failure_car",
+    "internal_failure_drone",
+    "internal_failure_car",
     "bad_weather",
-    # "restricted_area",
-    # "traffic_jam"
+    "restricted_area",
+    "traffic_jam"
 ]
 
 # Possible types of components
@@ -179,7 +179,8 @@ def simulate_journey(task, simulation_id, uncertainty, section, actor: Actor, un
             best_component.id if 'best_component' in locals() and best_component is not None else actor.id,
             json.dumps(location_info), best_cbr if best_cbr is not None else "-", 
             ', '.join(components_config['types']), components_config['count'],
-            delegation_order, json.dumps(ranking if 'ranking' in locals() else "-"), json.dumps(task), "Yes" if mission_completed else "No"
+            delegation_order, json.dumps(ranking if 'ranking' in locals() else "-"), json.dumps(task), 
+            "Yes" if mission_completed and not uncertainty_affect(component_type=best_component_type, uncertainty=uncertainty) else "No"
         ])
 
 def uncertainty_affect_car(uncertainty):
@@ -187,8 +188,16 @@ def uncertainty_affect_car(uncertainty):
         return True
     return False 
 
+def uncertainty_affect(uncertainty, component_type):
+    if component_type == "car":
+        if uncertainty == "traffic_jam" or uncertainty == "restricted_area":
+            return True
+    elif component_type == "drone":
+        if uncertainty == "bad_weather":
+            return True
+    return False
+
 def register_tasks_to_all():
-    
     response = requests.put("http://127.0.0.1:5000/tasks/1", json={"registered_components": []})
     if response.status_code != 200:
         print(f"Failed to clean tasks. Status code: {response.status_code}, Message: {response.text}")
@@ -214,7 +223,7 @@ def register_tasks_to_all():
 simulation_id = 1  # Start IDs from 1
 for uncertainty in uncertainties:
     for num_types in range(1, len(component_types)+1):  # Number of types from 1 to 5
-        for count in [20]:  # Number of components of each type
+        for count in [1, 5, 10]:  # Number of components of each type
             if num_types == 1:  # Handle cases with only 1 type
                 if uncertainty_affect_car(uncertainty):
                     components_config = {
@@ -272,7 +281,7 @@ for uncertainty in uncertainties:
             print(f"Pickup Address: ({start_x:.6f}, {start_y:.6f})")
             print(f"Target Address: ({target_x:.6f}, {target_y:.6f})")
             print(f"Total distance to target: {actor.total_distance:.6f} km\n")
-
+        
             # Simulate for each section of the journey
             for section in ["start", "middle", "end"]:
                 simulate_journey(task, simulation_id, uncertainty, section, actor, uncertainty_monitor, start_x, start_y, target_x, target_y, components_config, speed_multiplier=1000)

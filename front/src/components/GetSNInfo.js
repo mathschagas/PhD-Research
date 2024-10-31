@@ -26,7 +26,7 @@ function GetSNInfo() {
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const response = await axios.get("http://127.0.0.1:5001/get_data");
+      const response = await axios.get("http://127.0.0.1:5002/get_data");
       console.log("Data fetched successfully:", response.data);
       setData(response.data);
     } catch (error) {

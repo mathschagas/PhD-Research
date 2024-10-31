@@ -1,8 +1,7 @@
 import requests
-
-from UncertaintyMonitor import UncertaintyMonitor
-from actor import Actor
-from SimulationUtils import calculate_distance
+from datetime import datetime
+import csv
+import json
 
 # The list of uncertainties to simulate
 uncertainties = [
@@ -10,71 +9,78 @@ uncertainties = [
     "internal_failure_car",
     "bad_weather",
     "restricted_area",
-    "traffic_jam"
+    "traffic_jam",
 ]
 
 # Possible types of components
-component_types = ["car", "drone", "bicycle", "truck", "pedestrian"]
-
-# Start point (Wembley Stadium)
-start_lat = 51.5560
-start_lon = -0.2796
-
-# after 5 km
-percent25_lat = 51.5300
-percent25_lon = -0.2090
-
-# after 10 km
-percent50_lat = 51.5160
-percent50_lon = -0.1390
-
-# after 15 km
-percent75_lat = 51.5040
-percent75_lon = -0.0730
-
-# after 20 km (Tower Bridge)
-end_lat = 51.5055
-end_lon = -0.0754
-
-lats = [start_lat, percent25_lat, percent50_lat, percent75_lat, end_lat]
-lons = [start_lon, percent25_lon, percent50_lon, percent75_lon, end_lon]
-
-# Define default speeds for each component type
-component_speeds = {
-    "car": 50.0,
-    "drone": 60.0,
-    "bicycle": 20.0,
-    "truck": 40.0,
-    "pedestrian": 5.0
+component_types = {
+    1: ["drone"],  # For uncertainties affecting drones only
+    2: ["drone", "car"],
+    3: ["drone", "car", "bicycle"],
+    4: ["drone", "car", "bicycle", "truck"],
+    5: ["drone", "car", "bicycle", "truck", "pedestrian"]
 }
 
+# Possible number of components for each type
+num_components = [1, 5, 10]
+
+# Latitudes and longitudes for the origin, target, start, middle and end points
+origin_x, origin_y = 51.5103, -0.1277  
+target_x, target_y = 51.3450, -0.2415  
+start_x, start_y = 51.4690, -0.1562
+middle_x, middle_y = 51.4277, -0.1847
+end_x, end_y = 51.3864, -0.2131
+
+# Output file name
+output_file_name = f'simulation_results_{datetime.now().strftime("%d-%m-%Y_%H-%M-%S")}.csv'
 
 
-def generate_components(components_config):
-
-    # Clean the mock API
-    response = requests.post("http://127.0.0.1:5001/clean_components")
-    if response.status_code != 200:
-        print(f"Failed to clean components. Status code: {response.status_code}, Message: {response.text}")
-
-    # Generate components
-    response = requests.post(
-        "http://127.0.0.1:5001/generate_multiple_components",
-        json=components_config
-    )
-    if response.status_code != 200:
-        print(f"Failed to generate components. Status code: {response.status_code}, Message: {response.text}")
-    else:
-        print("Components generated successfully.")
+# Returns True if the uncertainty affects the component type
+def uncertainty_affects(uncertainty, component_type):
+    if component_type == "car":
+        if uncertainty == "traffic_jam" or uncertainty == "restricted_area" or uncertainty == "internal_failure_car":
+            return True
+    elif component_type == "drone":
+        if uncertainty == "bad_weather" or uncertainty == "internal_failure_drone":
+            return True
+    return False
 
 
-    response = requests.put("http://127.0.0.1:5000/tasks/1", json={"registered_components": []})
-    if response.status_code != 200:
-        print(f"Failed to clean tasks. Status code: {response.status_code}, Message: {response.text}")
+# Returns the types included in a simulation based on the number of types and the uncertainty
+def get_types_for_simulation(num_types, uncertainty):
+    if num_types == 1:
+        if uncertainty_affects(uncertainty, "drone"):
+            return ["drone"]
+        elif uncertainty_affects(uncertainty, "car"):
+            return ["car"]
+    return component_types[num_types]
 
 
+# Set the environment APIs for the simulation
+def set_environment_apis(components_config):
+
+    # Clean the components in the mock API
+    clean_response = requests.post("http://127.0.0.1:5001/clean_components")
+    if clean_response.status_code != 200:
+        print(f"Failed to clean components. Status code: {clean_response.status_code}, Message: {clean_response.text}")
+
+    # Generate components in the mock API
+    for component_type in components_config['types']:
+        gen_response = requests.post(
+            "http://127.0.0.1:5001/generate_components",
+            json={"type": component_type, "quantity": components_config['count']}
+        )
+        if gen_response.status_code != 200:
+            print(f"Failed to generate components of type {component_type}. Status code: {gen_response.status_code}, Message: {gen_response.text}")
+            continue
+
+    
+    clean_tasks_response = requests.put("http://127.0.0.1:5000/tasks/1", json={"registered_components": []})
+    if clean_tasks_response.status_code != 200:
+        print(f"Failed to clean tasks. Status code: {clean_tasks_response.status_code}, Message: {clean_tasks_response.text}")
+    
     # Register tasks to all components in the mock network
-    response = requests.post(
+    register_components_response = requests.post(
         "http://127.0.0.1:5001/register_tasks_to_all",
         json={
             "tasks": [
@@ -82,61 +88,140 @@ def generate_components(components_config):
             ]
         }
     )
-    if response.status_code == 200:
-        print("Tasks registered to all components successfully.")
+    if register_components_response.status_code == 200:
+        pass
+        # print("Tasks registered to all components successfully.")
+    else:
+        print(f"Failed to register tasks. Status code: {register_components_response.status_code}, Message: {register_components_response.text}")
 
-def get_delegation_ranking(start_lat, start_lon, target_lat, target_lon):
-    components = []
+    get_response = requests.get("http://127.0.0.1:5000/tasks/1")
+    return get_response.json()
+
+
+# Get the best component from the Support Network
+def get_best_component_from_sn(section):
+
+    # Initialize distance_to_target variable
+    if section == "start":
+        lat1, lon1 = start_x, start_y
+    elif section == "middle":
+        lat1, lon1 = middle_x, middle_y
+    elif section == "end":
+        lat1, lon1 = end_x, end_y
+    lat2, lon2 = target_x, target_y
+    
+    # Get the best component from the Support Network
     response = requests.get(
-        "http://127.0.0.1:5002/request_delegation/1/Default",
-        params={"lat1": start_lat, "lon1": start_lon, "lat2": target_lat, "lon2": target_lon})
+        "http://127.0.0.1:5002/request_delegation/1/Fragile_Raining",
+        params={"lat1": lat1, "lon1": lon1, "lat2": lat2, "lon2": lon2}
+    )
     if response.status_code == 200:
         components = response.json()
-    else:
-        print("Failed to get delegation ranking. Status code: {response.status_code}, Message: {response.text}")  
-    return components
-
-def uncertainty_affect_car(uncertainty):
-    if uncertainty == "internal_failure_car" or uncertainty == "traffic_jam" or "restricted_area" in uncertainty:
-        return True
-    return False 
+        if components:
+            best_component = components[0]
+            return best_component, components
+    return None, None, None, None
 
 
-def get_support_network_config(num_types, quantity, uncertainty):
-    if num_types == 1:  # Handle cases with only 1 type
-        components_config = {
-            'types': ["car"] if uncertainty_affect_car(uncertainty) else ["drone"],
-            'quantity': quantity
-        }
-    else:
-        components_config = {
-            'types': component_types[num_types],
-            'quantity': quantity
-        }
-    return components_config
+# Check if the delegated component was able to complete the task
+def is_mission_completed(uncertainty, best_component):
+    mission_completed = "No"
+    if not uncertainty_affects(component_type=best_component['type'], uncertainty=uncertainty) and "internal" not in uncertainty:
+        mission_completed = "Yes"
+    return mission_completed
 
 
-if __name__ == "__main__":
+# Simulate the journey of a task
+def simulate_journey(task, simulation_id, uncertainty, section, current_actor, components_config):
+    # Get the best component from the Support Network
+    best_component, ranking = get_best_component_from_sn(section)
+    if not best_component:
+        print(f"No valid component found for delegation at section = {section} in the journey.")
 
-    simulation_id = 1  # Start IDs from 1
+    # Record the simulation results
+    with open(output_file_name, mode='a', newline='') as file:
+        writer = csv.writer(file)
+        # writer.writerow([
+        #     simulation_id,
+        #     uncertainty,
+        #     section,
+        #     current_actor,
+        #     best_component['id'] if best_component else "-",
+        #     best_component['type'] if best_component else "-",
+        #     best_component['score'] if best_component else "-",
+        #     ', '.join(components_config['types']),
+        #     components_config['count'],
+        #     1,
+        #     json.dumps(ranking) if ranking else "-",
+        #     json.dumps(task),
+        #     "No"
+        # ])
+
+        writer.writerow([
+            simulation_id,
+            uncertainty,
+            section,
+            best_component['id'] if best_component else current_actor, 
+            best_component['id'] if best_component else current_actor,
+            best_component['type'] if best_component else "-", 
+            best_component['score'] if best_component else "-",
+            ', '.join(components_config['types']),
+            components_config['count'],
+            # 2,
+            json.dumps(ranking) if ranking else "-",
+            json.dumps(task),
+            is_mission_completed(best_component=best_component, uncertainty=uncertainty)
+        ])
+
+
+def create_output_file():
+    # Set up CSV to record results with reordered columns
+    with open(output_file_name, mode='w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow([
+            'Simulation_ID',
+            'Uncertainty_Type',
+            'Trajectory_Section',
+            'Actor_ID',
+            'Best_Component_ID',
+            'Best_Component_Type',
+            'CBR_Value',
+            'Component_Types',
+            'Component_Quantities',
+            # 'Delegation_Order',
+            'Ranking_Info',
+            'Task_Info',
+            'Mission_Completed'
+        ])
+
+
+
+
+# Run the simulations
+def run_simulations():
+
+    create_output_file()
+
+    simulation_id = 1 # Start IDs from 1
+    # For each type of uncertainty
     for uncertainty in uncertainties:
-        for num_types in range(1, len(component_types) + 1):
-            for quantity in [1, 5, 10]:      
-                components_config = get_support_network_config(num_types, quantity, uncertainty)
-                generate_components(components_config)
-                for section in range(1, len(lats)-1):
-                    reached_target = False
-                    distance_to_target = 15.0 - 5.0 * (section - 1)
-                    while not reached_target:
-                        # Get the delegation ranking
-                        delegation_ranking = get_delegation_ranking(lats[section], lons[section], end_lat, end_lon)
-                        # Select the next component to delegate the task
-                        if delegation_ranking:
-                            next_component = delegation_ranking[0]
-                            print(f"Delegating task to component {next_component['id']} ({next_component['type']})")
-                        else:
-                            print("No components available for delegation. Task failed.")
-                            break
+        # For each number of component types (1, 2, 3, 4, 5)
+        for num_types in range(1, len(component_types)+1):
+            # For each different amount of components within each type
+            for count in num_components:
+                components_config = {
+                    'types': get_types_for_simulation(num_types, uncertainty),
+                    'count': count
+                }
+                task = set_environment_apis(components_config)
+                current_actor = "InitialDrone" if uncertainty_affects(uncertainty, "drone") else "InitialCar"
+                # For each section of the journey
+                for section in ["start", "middle", "end"]:
+                    simulate_journey(task, simulation_id, uncertainty, section, current_actor, components_config)
+                    simulation_id += 1
+    print(f"Simulations completed. Results are available in {output_file_name}.")
 
+# Main function
+if __name__ == "__main__":
+    run_simulations()
 
-                        

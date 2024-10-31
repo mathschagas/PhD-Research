@@ -52,7 +52,7 @@ class SupportNetworkManager:
             # Remove services from self.data that are not in the file
             self.data = [service for service in self.data if service['port'] in file_data_ports]
 
-            # Add services to self.data that are in the file but not in self.data
+            # Add services to self.data that     are in the file but not in self.data
             for service in file_data:
                 if service['port'] not in self_data_ports:
                     response = requests.get(f'http://localhost:{service["port"]}/info')
