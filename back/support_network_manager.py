@@ -46,8 +46,8 @@ class SupportNetworkManager:
         try:
             with open('service_info.json', 'r') as f:
                 file_data = json.load(f)
-            file_data_ports = {service['port'] for service in file_data}
-            self_data_ports = {service['port'] for service in self.data}
+            file_data_ports = {service['id'] for service in file_data}
+            self_data_ports = {service['id'] for service in self.data}
 
             # Remove services from self.data that are not in the file
             self.data = [service for service in self.data if service['port'] in file_data_ports]

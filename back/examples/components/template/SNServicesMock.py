@@ -5,7 +5,7 @@ from flask_cors import CORS
 import uuid
 import requests as http_requests
 
-from quote_functions import quote_functions
+from quote_functions import quote as quote_estimate
 
 app = Flask(__name__)
 CORS(app)
@@ -202,8 +202,8 @@ def quote(component_id):
 
     # Get the type of component and calculate the quote using the correct function
     component_type = component['type'].lower()  # Ensure the type is lowercase
-    if component_type in quote_functions:
-        quote_result = quote_functions[component_type](lat1, lon1, lat2, lon2, component_id)
+    if component_type:
+        quote_result = quote_estimate(component_type, lat1, lon1, lat2, lon2, component_id)
     else:
         return jsonify(status='Error', message=f'No quote function available for component type: {component_type}'), 400
 

@@ -3,6 +3,10 @@ from datetime import datetime
 import csv
 import json
 
+scenarios = [
+    "Fragile_Raining",
+],
+
 # The list of uncertainties to simulate
 uncertainties = [
     "internal_failure_drone",
@@ -99,7 +103,7 @@ def set_environment_apis(components_config):
 
 
 # Get the best component from the Support Network
-def get_best_component_from_sn(section):
+def get_best_component_from_sn(section, scenario = None):
 
     # Initialize distance_to_target variable
     if section == "start":
@@ -109,12 +113,10 @@ def get_best_component_from_sn(section):
     elif section == "end":
         lat1, lon1 = end_x, end_y
     lat2, lon2 = target_x, target_y
-    
+   
     # Get the best component from the Support Network
-    response = requests.get(
-        "http://127.0.0.1:5002/request_delegation/1/Fragile_Raining",
-        params={"lat1": lat1, "lon1": lon1, "lat2": lat2, "lon2": lon2}
-    )
+    url = f"http://127.0.0.1:5002/request_delegation/1/{scenario}" if scenario else "http://127.0.0.1:5002/request_delegation/1/Fragile_Raining"
+    response = requests.get(url, params={"lat1": lat1, "lon1": lon1, "lat2": lat2, "lon2": lon2})
     if response.status_code == 200:
         components = response.json()
         if components:
@@ -143,22 +145,6 @@ def simulate_journey(task, simulation_id, uncertainty, section, initial_actor, c
     # Record the simulation results
     with open(output_file_name, mode='a', newline='') as file:
         writer = csv.writer(file)
-        # writer.writerow([
-        #     simulation_id,
-        #     uncertainty,
-        #     section,
-        #     initial_actor,
-        #     best_component['id'] if best_component else "-",
-        #     best_component['type'] if best_component else "-",
-        #     best_component['score'] if best_component else "-",
-        #     ', '.join(components_config['types']),
-        #     components_config['count'],
-        #     1,
-        #     json.dumps(ranking) if ranking else "-",
-        #     json.dumps(task),
-        #     "No"
-        # ])
-
         writer.writerow([
             simulation_id,
             uncertainty,
@@ -169,7 +155,6 @@ def simulate_journey(task, simulation_id, uncertainty, section, initial_actor, c
             best_component['score'] if best_component else "-",
             ', '.join(components_config['types']),
             components_config['count'],
-            # 2,
             json.dumps(ranking) if ranking else "-",
             json.dumps(task),
             is_mission_completed(best_component=best_component, uncertainty=uncertainty)
@@ -190,20 +175,15 @@ def create_output_file():
             'CBR_Value',
             'Component_Types',
             'Component_Quantities',
-            # 'Delegation_Order',
             'Ranking_Info',
             'Task_Info',
             'Mission_Completed'
         ])
 
-
-
-
 # Run the simulations
 def run_simulations():
 
     create_output_file()
-
     simulation_id = 1 # Start IDs from 1
     # For each type of uncertainty
     for uncertainty in uncertainties:
