@@ -93,43 +93,44 @@ def calculate_weighted_scores(task, selectedScenario, quotes):
             component['score'] = component.get('score', 0) + weight * normalized_value
 
     # Iterate over each constraint in the task
-    for constraint in matching_scenario['constraints']:
-        # Get constraint details
-        name = constraint['name']
-        operator = constraint['operator']
-        value = constraint['value']
-        weight = constraint['weight']
+    if 'constraints' in matching_scenario:
+        for constraint in matching_scenario['constraints']:
+            # Get constraint details
+            name = constraint['name']
+            operator = constraint['operator']
+            value = constraint['value']
+            weight = constraint['weight']
 
-        for component in quotes:
-            estimated_value = float(component['cbr'][name])
-            value = float(value)
+            for component in quotes:
+                estimated_value = float(component['cbr'][name])
+                value = float(value)
 
-            raw_penalty = 0
+                raw_penalty = 0
 
-            # Determine the penalty for each constraint
-            if operator == 'less' and estimated_value >= value:
-                raw_penalty =  1
-            elif operator == 'greater' and estimated_value <= value:
-                raw_penalty =  1
-            elif operator == 'lessOrEqual' and estimated_value > value:
-                raw_penalty =  1
-            elif operator == 'greaterOrEqual' and estimated_value < value:
-                raw_penalty =  1
-            elif operator == 'equal' and value != estimated_value:
-                raw_penalty =  1
-            elif operator == 'notEqual' and value == estimated_value:
-                raw_penalty =  1
-            
-            if 'raw_penalty' not in component:
-                component['raw_penalty'] = {}
-            component['raw_penalty'][name] = raw_penalty
+                # Determine the penalty for each constraint
+                if operator == 'less' and estimated_value >= value:
+                    raw_penalty =  1
+                elif operator == 'greater' and estimated_value <= value:
+                    raw_penalty =  1
+                elif operator == 'lessOrEqual' and estimated_value > value:
+                    raw_penalty =  1
+                elif operator == 'greaterOrEqual' and estimated_value < value:
+                    raw_penalty =  1
+                elif operator == 'equal' and value != estimated_value:
+                    raw_penalty =  1
+                elif operator == 'notEqual' and value == estimated_value:
+                    raw_penalty =  1
+                
+                if 'raw_penalty' not in component:
+                    component['raw_penalty'] = {}
+                component['raw_penalty'][name] = raw_penalty
 
-            # Remove the component if the special constraint is not satisfied
-            if weight == 999 and raw_penalty == 1:
-                components_to_remove.append(component)
-            else:
-                # Apply the penalty by adding the weighted penalty from the score
-                component['score'] += raw_penalty * weight
+                # Remove the component if the special constraint is not satisfied
+                if weight > 5 and raw_penalty == 1:
+                    components_to_remove.append(component)
+                else:
+                    # Apply the penalty by adding the weighted penalty from the score
+                    component['score'] += raw_penalty * weight
 
     # Remove the components that violated constraints with weight 999
     quotes = [comp for comp in quotes if comp not in components_to_remove]

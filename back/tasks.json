@@ -19,7 +19,7 @@
       }
     ],
     "description": "Deliver a package from the current location to the target location.",
-    "id": 1,
+    "id": "1",
     "name": "Deliver Package",
     "scenarios": [
       {
@@ -154,27 +154,27 @@
           {
             "name": "price",
             "type": "min",
-            "weight": "1"
+            "weight": 1
           },
           {
             "name": "time_to_deliver",
             "type": "min",
-            "weight": "1"
+            "weight": 1
           }
         ],
-        "name": "NoConstraints"
+        "name": "NoConstraintsBin"
       },
       {
         "cbr_attributes": [
           {
             "name": "price",
             "type": "min",
-            "weight": "2"
+            "weight": 4
           },
           {
             "name": "time_to_deliver",
             "type": "min",
-            "weight": "1"
+            "weight": 3
           }
         ],
         "name": "NoConstraintsWeightedPrice"
@@ -184,12 +184,12 @@
           {
             "name": "price",
             "type": "min",
-            "weight": "1"
+            "weight": 3
           },
           {
             "name": "time_to_deliver",
             "type": "min",
-            "weight": "2"
+            "weight": 4
           }
         ],
         "name": "NoConstraintsWeightedTimeToDeliver"
@@ -199,20 +199,20 @@
           {
             "name": "price",
             "type": "min",
-            "weight": "1"
+            "weight": 1
           },
           {
             "name": "time_to_deliver",
             "type": "max",
-            "weight": "0"
+            "weight": 1
           }
         ],
         "constraints": [
           {
             "name": "time_to_deliver",
             "operator": "less",
-            "value": "60",
-            "weight": "1"
+            "value": 60,
+            "weight": 1
           }
         ],
         "name": "1ConstraintBin"
@@ -222,20 +222,20 @@
           {
             "name": "price",
             "type": "min",
-            "weight": "1"
+            "weight": 3
           },
           {
             "name": "time_to_deliver",
             "type": "min",
-            "weight": "2"
+            "weight":4
           }
         ],
         "constraints": [
           {
             "name": "time_to_deliver",
             "operator": "less",
-            "value": "60",
-            "weight": "1"
+            "value": 60,
+            "weight": 5
           }
         ],
         "name": "1ConstraintLikert"
@@ -245,26 +245,26 @@
           {
             "name": "price",
             "type": "min",
-            "weight": "1"
+            "weight": 1
           },
           {
             "name": "time_to_deliver",
             "type": "min",
-            "weight": "1"
+            "weight": 1
           }
         ],
         "constraints": [
           {
             "name": "time_to_deliver",
             "operator": "less",
-            "value": "60",
-            "weight": "1"
+            "value": 60,
+            "weight": 1
           },
           {
             "name": "price",
             "operator": "less",
-            "value": "100",
-            "weight": "1"
+            "value": 100,
+            "weight": 1
           }
         ],
         "name": "2ConstraintsBin"
@@ -274,29 +274,169 @@
           {
             "name": "price",
             "type": "min",
-            "weight": "1"
+            "weight": 3
           },
           {
             "name": "time_to_deliver",
             "type": "min",
-            "weight": "2"
+            "weight": 4
           }
         ],
         "constraints": [
           {
             "name": "time_to_deliver",
             "operator": "less",
-            "value": "60",
-            "weight": "2"
+            "value": 60,
+            "weight": 5
           },
           {
             "name": "price",
             "operator": "less",
-            "value": "100",
-            "weight": "1"
+            "value": 100,
+            "weight": 5
           }
         ],
         "name": "2ConstraintsLikert"
+      },
+      {
+        "cbr_attributes": [
+          {
+            "name": "price",
+            "type": "min",
+            "weight": 1
+          },
+          {
+            "name": "time_to_deliver",
+            "type": "min",
+            "weight": 1
+          }
+        ],
+        "constraints": [
+          {
+            "name": "time_to_deliver",
+            "operator": "less",
+            "value": 60,
+            "weight": 1
+          },
+          {
+            "name": "price",
+            "operator": "less",
+            "value": 100,
+            "weight": 1
+          },
+          {
+            "name": "secure_container",
+            "operator": "equal",
+            "value": 1,
+            "weight": 1
+          }
+        ],
+        "name": "3ConstraintsBin"
+      },
+      {
+        "cbr_attributes": [
+          {
+            "name": "price",
+            "type": "min",
+            "weight": 3
+          },
+          {
+            "name": "time_to_deliver",
+            "type": "min",
+            "weight": 4
+          }
+        ],
+        "constraints": [
+          {
+            "name": "time_to_deliver",
+            "operator": "less",
+            "value": 60,
+            "weight": 5
+          },
+          {
+            "name": "price",
+            "operator": "less",
+            "value": 100,
+            "weight": 5
+          },
+          {
+            "name": "secure_container",
+            "operator": "equal",
+            "value": 1,
+            "weight": 3
+          }
+        ],
+        "name": "3ConstraintsLikert"
+      },
+      {
+        "cbr_attributes": [
+          {
+            "name": "price",
+            "type": "min",
+            "weight": 1
+          },
+          {
+            "name": "time_to_deliver",
+            "type": "min",
+            "weight": 1
+          }
+        ],
+        "constraints": [
+          {
+            "name": "time_to_deliver",
+            "operator": "less",
+            "value": 60,
+            "weight": 1
+          },
+          {
+            "name": "price",
+            "operator": "less",
+            "value": 100,
+            "weight": 1
+          },
+          {
+            "name": "secure_container",
+            "operator": "equal",
+            "value": 1,
+            "weight": 6
+          }
+        ],
+        "name": "HardConstraintsBin"
+      },
+      {
+        "cbr_attributes": [
+          {
+            "name": "price",
+            "type": "min",
+            "weight": 3
+          },
+          {
+            "name": "time_to_deliver",
+            "type": "min",
+            "weight": 4
+          }
+        ],
+        "constraints": [
+          {
+            "name": "time_to_deliver",
+            "operator": "less",
+            "value": 60,
+            "weight": 5
+          },
+          {
+            "name": "price",
+            "operator": "less",
+            "value": 100,
+            "weight": 4
+          },
+          {
+            "name": "secure_container",
+            "operator": "equal",
+            "value": 1,
+            "weight": 6
+          }
+        ],
+        "name": "HardConstraintsLikert"
       }
     ]
   }

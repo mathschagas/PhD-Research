@@ -4,8 +4,18 @@ import csv
 import json
 
 scenarios = [
-    "Fragile_Raining",
-],
+    # "NoConstraintsBin"
+    # "NoConstraintsWeightedPrice"
+    # "NoConstraintsWeightedTimeToDeliver"
+    # "1ConstraintBin"
+    # "1ConstraintLikert"
+    # "2ConstraintsBin"
+    # "2ConstraintsLikert"
+    "3ConstraintsBin"
+    # "3ConstraintsLikert"
+    # "HardConstraintsBin"
+    # "HardConstraintsLikert"
+]
 
 # The list of uncertainties to simulate
 uncertainties = [
@@ -34,10 +44,6 @@ target_x, target_y = 51.3450, -0.2415
 start_x, start_y = 51.4690, -0.1562
 middle_x, middle_y = 51.4277, -0.1847
 end_x, end_y = 51.3864, -0.2131
-
-# Output file name
-output_file_name = f'simulation_results_{datetime.now().strftime("%d-%m-%Y_%H-%M-%S")}.csv'
-
 
 # Returns True if the uncertainty affects the component type
 def uncertainty_affects(uncertainty, component_type):
@@ -122,12 +128,14 @@ def get_best_component_from_sn(section, scenario = None):
         if components:
             best_component = components[0]
             return best_component, components
-    return None, None, None, None
+    return None, None
 
 
 # Check if the delegated component was able to complete the task
 def is_mission_completed(uncertainty, best_component):
     mission_completed = "No"
+    if not best_component:
+        return mission_completed
     if "internal" in uncertainty:
         mission_completed = "Yes"
     elif not uncertainty_affects(component_type=best_component['type'], uncertainty=uncertainty):
@@ -136,9 +144,9 @@ def is_mission_completed(uncertainty, best_component):
 
 
 # Simulate the journey of a task
-def simulate_journey(task, simulation_id, uncertainty, section, initial_actor, components_config):
+def simulate_journey(task, simulation_id, uncertainty, section, initial_actor, components_config, scenario, output_file_name="simulation_results.csv"):
     # Get the best component from the Support Network
-    best_component, ranking = get_best_component_from_sn(section)
+    best_component, ranking = get_best_component_from_sn(section, scenario=scenario)
     if not best_component:
         print(f"No valid component found for delegation at section = {section} in the journey.")
 
@@ -161,7 +169,7 @@ def simulate_journey(task, simulation_id, uncertainty, section, initial_actor, c
         ])
 
 
-def create_output_file():
+def create_output_file(output_file_name="simulation_results.csv"):
     # Set up CSV to record results with reordered columns
     with open(output_file_name, mode='w', newline='') as file:
         writer = csv.writer(file)
@@ -182,26 +190,29 @@ def create_output_file():
 
 # Run the simulations
 def run_simulations():
-
-    create_output_file()
-    simulation_id = 1 # Start IDs from 1
-    # For each type of uncertainty
-    for uncertainty in uncertainties:
-        # For each number of component types (1, 2, 3, 4, 5)
-        for num_types in range(1, len(component_types)+1):
-            # For each different amount of components within each type
-            for count in num_components:
-                components_config = {
-                    'types': get_types_for_simulation(num_types, uncertainty),
-                    'count': count
-                }
-                task = set_environment_apis(components_config)
-                initial_actor = "InitialDrone" if uncertainty_affects(uncertainty, "drone") else "InitialCar"
-                # For each section of the journey
-                for section in ["start", "middle", "end"]:
-                    simulate_journey(task, simulation_id, uncertainty, section, initial_actor, components_config)
-                    simulation_id += 1
-    print(f"Simulations completed. Results are available in {output_file_name}.")
+    current_datetime = datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
+    for scenario in scenarios:
+        # Output file name
+        output_file_name = f'{scenario}_{current_datetime}.csv'
+        create_output_file(output_file_name=output_file_name)
+        simulation_id = 1 # Start IDs from 1
+        # For each type of uncertainty
+        for uncertainty in uncertainties:
+            # For each number of component types (1, 2, 3, 4, 5)
+            for num_types in range(1, len(component_types)+1):
+                # For each different amount of components within each type
+                for count in num_components:
+                    components_config = {
+                        'types': get_types_for_simulation(num_types, uncertainty),
+                        'count': count
+                    }
+                    task = set_environment_apis(components_config)
+                    initial_actor = "InitialDrone" if uncertainty_affects(uncertainty, "drone") else "InitialCar"
+                    # For each section of the journey
+                    for section in ["start", "middle", "end"]:
+                        simulate_journey(task, simulation_id, uncertainty, section, initial_actor, components_config, scenario, output_file_name=output_file_name)
+                        simulation_id += 1
+        print(f"Simulations for \"{scenario}\" completed. Results are available in {output_file_name}.")
 
 # Main function
 if __name__ == "__main__":
