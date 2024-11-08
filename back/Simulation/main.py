@@ -11,8 +11,8 @@ scenarios = [
     # "1ConstraintLikert"
     # "2ConstraintsBin"
     # "2ConstraintsLikert"
-    "3ConstraintsBin"
-    # "3ConstraintsLikert"
+    # "3ConstraintsBin"
+    "3ConstraintsLikert"
     # "HardConstraintsBin"
     # "HardConstraintsLikert"
 ]
