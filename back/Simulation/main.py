@@ -109,7 +109,7 @@ def set_environment_apis(components_config):
 
 
 # Get the best component from the Support Network
-def get_best_component_from_sn(section, scenario = None):
+def get_best_component_from_sn(section, uncertainty, scenario = None):
 
     # Initialize distance_to_target variable
     if section == "start":
@@ -122,7 +122,7 @@ def get_best_component_from_sn(section, scenario = None):
    
     # Get the best component from the Support Network
     url = f"http://127.0.0.1:5002/request_delegation/1/{scenario}" if scenario else "http://127.0.0.1:5002/request_delegation/1/Fragile_Raining"
-    response = requests.get(url, params={"lat1": lat1, "lon1": lon1, "lat2": lat2, "lon2": lon2})
+    response = requests.get(url, params={"lat1": lat1, "lon1": lon1, "lat2": lat2, "lon2": lon2, "uncertainty": uncertainty})
     if response.status_code == 200:
         components = response.json()
         if components:
@@ -146,7 +146,7 @@ def is_mission_completed(uncertainty, best_component):
 # Simulate the journey of a task
 def simulate_journey(task, simulation_id, uncertainty, section, initial_actor, components_config, scenario, output_file_name="simulation_results.csv"):
     # Get the best component from the Support Network
-    best_component, ranking = get_best_component_from_sn(section, scenario=scenario)
+    best_component, ranking = get_best_component_from_sn(section, uncertainty=uncertainty, scenario=scenario)
     if not best_component:
         print(f"No valid component found for delegation at section = {section} in the journey.")
 

@@ -58,7 +58,17 @@ def normalize(value, min_value, max_value, minimize=False):
         normalized = (value - min_value) / (max_value - min_value)
         return normalized if minimize else 1 - normalized
 
-def calculate_weighted_scores(task, selectedScenario, quotes):
+# Returns True if the uncertainty affects the component type
+def uncertainty_affects(uncertainty, component_type):
+    if component_type == "car" or component_type == "truck":
+        if uncertainty == "traffic_jam" or uncertainty == "restricted_area":
+            return True
+    elif component_type == "drone" or component_type == "pedestrian" or component_type == "bicycle":
+        if uncertainty == "bad_weather":
+            return True
+    return False
+
+def calculate_weighted_scores(task, selectedScenario, quotes, uncertainty):
     # Initialize scores list
     scores = []
     components_to_remove = []
@@ -135,6 +145,14 @@ def calculate_weighted_scores(task, selectedScenario, quotes):
     # Remove the components that violated constraints with weight 999
     quotes = [comp for comp in quotes if comp not in components_to_remove]
 
+    # Add penalty for the uncertainty if it affects the component according to its type
+    for comp in quotes:
+        if uncertainty_affects(uncertainty, component['type']):
+            if "Likert" in matching_scenario['name']:
+                comp['score'] += 3
+            else:
+                comp['score'] += 1
+
     # Build final scores list
     for component in quotes:
         scores.append({
@@ -147,7 +165,7 @@ def calculate_weighted_scores(task, selectedScenario, quotes):
 
     return sorted(scores, key=lambda x: x['score'], reverse=False)
 
-def calculate_delegation_cbr_score(task):
+def calculate_delegation_cbr_score(task, uncertainty):
 
     # Check which components are registered for this task
     task_data = get_task(task['id'])
@@ -181,6 +199,6 @@ def calculate_delegation_cbr_score(task):
     ]
 
     # Calculate score for each remaining component
-    scores = calculate_weighted_scores(task_data, task['scenario'], quotes)
+    scores = calculate_weighted_scores(task_data, task['scenario'], quotes, uncertainty)
     # print(scores)
     return scores

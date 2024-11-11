@@ -1,8 +1,6 @@
 import json
 import colorlog
 import logging
-import threading
-import time
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 import requests
@@ -97,15 +95,17 @@ class SupportNetworkManager:
             lon1 = request.args.get('lon1')
             lat2 = request.args.get('lat2')
             lon2 = request.args.get('lon2')
+            uncertainty = request.args.get('uncertainty')
 
             task = {
                 'id': selectedTask,
                 'scenario': selectedScenario,
+                'uncertainty': uncertainty,
                 'start_location': {'lat': lat1, 'lon': lon1},
                 'end_location': {'lat': lat2, 'lon': lon2}
             }
 
-            score = calculate_delegation_cbr_score(task)
+            score = calculate_delegation_cbr_score(task, uncertainty)
             return jsonify(score)
         
     # Function to send logs every 10 seconds
