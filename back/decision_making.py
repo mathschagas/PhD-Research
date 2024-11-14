@@ -77,6 +77,52 @@ def calculate_weighted_scores(task, selectedScenario, quotes, uncertainty):
     if not matching_scenario:
         return scores
     
+    # Remove components that their type is affected by the current uncertainty
+    for comp in quotes:
+        if uncertainty_affects(uncertainty, comp['type']):
+            components_to_remove.append(comp)
+
+    # Iterate over each constraint in the task
+    if 'constraints' in matching_scenario:
+        for constraint in matching_scenario['constraints']:
+            # Get constraint details
+            name = constraint['name']
+            operator = constraint['operator']
+            value = constraint['value']
+            weight = constraint['weight']
+
+            for component in quotes:
+                estimated_value = float(component['cbr'][name])
+                value = float(value)
+
+                # Define a dictionary to map operators to lambda functions
+                operator_functions = {
+                    'less': lambda est, val: est >= val,
+                    'greater': lambda est, val: est <= val,
+                    'lessOrEqual': lambda est, val: est > val,
+                    'greaterOrEqual': lambda est, val: est < val,
+                    'equal': lambda est, val: est != val,
+                    'notEqual': lambda est, val: est == val
+                }
+
+                # Determine the penalty for each constraint
+                raw_penalty = 1 if operator_functions[operator](estimated_value, value) else 0
+                
+                if 'raw_penalty' not in component:
+                    component['raw_penalty'] = {}
+                component['raw_penalty'][name] = raw_penalty
+
+                # Remove the component if the special constraint is not satisfied
+                if weight > 5 and raw_penalty == 1:
+                    components_to_remove.append(component)
+                else:
+                    # Apply the penalty by adding the weighted penalty from the score
+                    component['score'] += raw_penalty * weight
+
+
+    # Remove the components that violated constraints with weight 999
+    quotes = [comp for comp in quotes if comp not in components_to_remove]
+
     # Iterate over each attribute in the task
     for attribute in matching_scenario['cbr_attributes']:
         # Get attribute details
@@ -101,57 +147,6 @@ def calculate_weighted_scores(task, selectedScenario, quotes, uncertainty):
 
             # Add the weighted attribute to the score
             component['score'] = component.get('score', 0) + weight * normalized_value
-
-    # Iterate over each constraint in the task
-    if 'constraints' in matching_scenario:
-        for constraint in matching_scenario['constraints']:
-            # Get constraint details
-            name = constraint['name']
-            operator = constraint['operator']
-            value = constraint['value']
-            weight = constraint['weight']
-
-            for component in quotes:
-                estimated_value = float(component['cbr'][name])
-                value = float(value)
-
-                raw_penalty = 0
-
-                # Determine the penalty for each constraint
-                if operator == 'less' and estimated_value >= value:
-                    raw_penalty =  1
-                elif operator == 'greater' and estimated_value <= value:
-                    raw_penalty =  1
-                elif operator == 'lessOrEqual' and estimated_value > value:
-                    raw_penalty =  1
-                elif operator == 'greaterOrEqual' and estimated_value < value:
-                    raw_penalty =  1
-                elif operator == 'equal' and value != estimated_value:
-                    raw_penalty =  1
-                elif operator == 'notEqual' and value == estimated_value:
-                    raw_penalty =  1
-                
-                if 'raw_penalty' not in component:
-                    component['raw_penalty'] = {}
-                component['raw_penalty'][name] = raw_penalty
-
-                # Remove the component if the special constraint is not satisfied
-                if weight > 5 and raw_penalty == 1:
-                    components_to_remove.append(component)
-                else:
-                    # Apply the penalty by adding the weighted penalty from the score
-                    component['score'] += raw_penalty * weight
-
-    # Remove the components that violated constraints with weight 999
-    quotes = [comp for comp in quotes if comp not in components_to_remove]
-
-    # Add penalty for the uncertainty if it affects the component according to its type
-    for comp in quotes:
-        if uncertainty_affects(uncertainty, component['type']):
-            if "Likert" in matching_scenario['name']:
-                comp['score'] += 3
-            else:
-                comp['score'] += 1
 
     # Build final scores list
     for component in quotes:
@@ -179,16 +174,6 @@ def calculate_delegation_cbr_score(task, uncertainty):
     # Check which components are available
     available_components = [comp for comp in registered_components if comp.get('availability') == 'available']
 
-    # Request estimates for the available components
-    # estimates = [
-    #     {
-    #         "name": comp['name'],
-    #         "port": comp['port'],
-    #         "cbr": get_component_estimate(comp, task_data['id'])
-    #     } 
-    #     for comp in available_components
-    # ]
-
     quotes = [
         {
             "type": comp['type'],
@@ -200,5 +185,4 @@ def calculate_delegation_cbr_score(task, uncertainty):
 
     # Calculate score for each remaining component
     scores = calculate_weighted_scores(task_data, task['scenario'], quotes, uncertainty)
-    # print(scores)
     return scores

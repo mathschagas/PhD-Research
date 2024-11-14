@@ -28,20 +28,6 @@
         "secure_container_min": 0,
         "secure_container_max": 1
     },
-    "motorcycle": {
-        "speed_min": 40,
-        "speed_max": 50,
-        "cost_per_km_min": 6,
-        "cost_per_km_max": 10,
-        "service_cost_min": 0,
-        "service_cost_max": 0,
-        "distance_to_package_min": 0,
-        "distance_to_package_max": 5,
-        "safe_to_rain_min": 0,
-        "safe_to_rain_max": 1,
-        "secure_container_min": 0,
-        "secure_container_max": 1
-    },
     "bicycle": {
         "speed_min": 15,
         "speed_max": 25,
@@ -83,19 +69,5 @@
         "safe_to_rain_max": 0,
         "secure_container_min": 0,
         "secure_container_max": 0
-    },
-    "scooter": {
-        "speed_min": 25,
-        "speed_max": 35,
-        "cost_per_km_min": 5,
-        "cost_per_km_max": 10,
-        "service_cost_min": 0,
-        "service_cost_max": 0,
-        "distance_to_package_min": 0,
-        "distance_to_package_max": 5,
-        "safe_to_rain_min": 0,
-        "safe_to_rain_max": 1,
-        "secure_container_min": 0,
-        "secure_container_max": 1
-   }
+    }
 }

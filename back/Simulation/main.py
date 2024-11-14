@@ -2,9 +2,10 @@ import requests
 from datetime import datetime
 import csv
 import json
+# from sn_combinations import get_permutations
 
 scenarios = [
-    # "NoConstraintsBin"
+    "NoConstraintsBin"
     # "NoConstraintsWeightedPrice"
     # "NoConstraintsWeightedTimeToDeliver"
     # "1ConstraintBin"
@@ -12,7 +13,7 @@ scenarios = [
     # "2ConstraintsBin"
     # "2ConstraintsLikert"
     # "3ConstraintsBin"
-    "3ConstraintsLikert"
+    # "3ConstraintsLikert"
     # "HardConstraintsBin"
     # "HardConstraintsLikert"
 ]
@@ -34,6 +35,8 @@ component_types = {
     4: ["drone", "car", "bicycle", "truck"],
     5: ["drone", "car", "bicycle", "truck", "pedestrian"]
 }
+# component_types = get_permutations()
+
 
 # Possible number of components for each type
 num_components = [1, 5, 10]
@@ -148,7 +151,7 @@ def simulate_journey(task, simulation_id, uncertainty, section, initial_actor, c
     # Get the best component from the Support Network
     best_component, ranking = get_best_component_from_sn(section, uncertainty=uncertainty, scenario=scenario)
     if not best_component:
-        print(f"No valid component found for delegation at section = {section} in the journey.")
+        print(f"No valid component found for delegation at simulation {simulation_id}.")
 
     # Record the simulation results
     with open(output_file_name, mode='a', newline='') as file:
@@ -158,9 +161,10 @@ def simulate_journey(task, simulation_id, uncertainty, section, initial_actor, c
             uncertainty,
             section,
             initial_actor, 
-            best_component['id'] if best_component else initial_actor,
+            best_component['id'] if best_component else "-",
             best_component['type'] if best_component else "-", 
             best_component['score'] if best_component else "-",
+            best_component if best_component else "-",
             ', '.join(components_config['types']),
             components_config['count'],
             json.dumps(ranking) if ranking else "-",
@@ -180,7 +184,8 @@ def create_output_file(output_file_name="simulation_results.csv"):
             'Initial_Actor',
             'Best_Component_ID',
             'Best_Component_Type',
-            'CBR_Value',
+            'Best_Component_Score',
+            'Best_Component_Info',            
             'Component_Types',
             'Component_Quantities',
             'Ranking_Info',
