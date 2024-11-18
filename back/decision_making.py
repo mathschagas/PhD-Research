@@ -1,14 +1,33 @@
 import requests as http_requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+
+# Create a session
+session = http_requests.Session()
+
+# Define a retry strategy
+retry_strategy = Retry(
+    total=10,  # Total number of retries
+    backoff_factor=1,  # Waits 1 second between retries, then 2s, 4s, 8s...
+    status_forcelist=[429, 500, 502, 503, 504],  # Status codes to retry on
+    allowed_methods=["HEAD", "GET", "OPTIONS"]  # Methods to retry
+)
+
+# Mount the retry strategy to the session
+adapter = HTTPAdapter(max_retries=retry_strategy)
+session.mount("http://", adapter)
+session.mount("https://", adapter)
+
 
 def get_task(task_id):
-    response = http_requests.get(f"http://127.0.0.1:5000/tasks/{task_id}")
+    response = session.get(f"http://127.0.0.1:5000/tasks/{task_id}")
     if response.status_code == 200:
         return response.json()
     else:
         return None
     
 def get_component_info(component):
-    response = http_requests.get(f"http://127.0.0.1:5001/components/{component['id']}/info")
+    response = session.get(f"http://127.0.0.1:5001/components/{component['id']}/info")
     if response.status_code == 200:
         return response.json()['component']
     else:
@@ -16,7 +35,7 @@ def get_component_info(component):
 
 # get component info for not mocked components
 def _get_component_info(component):
-    response = http_requests.get(f"http://127.0.0.1:{component['port']}/info")
+    response = session.get(f"http://127.0.0.1:{component['port']}/info")
     if response.status_code == 200:
         return response.json()['component']
     else:
@@ -24,7 +43,7 @@ def _get_component_info(component):
 
 
 def get_component_estimate(component, task):
-    response = http_requests.get(f"http://127.0.0.1:{component['port']}/estimate")
+    response = session.get(f"http://127.0.0.1:{component['port']}/estimate")
     if response.status_code == 200:
         return response.json()['cbr']
     else:
@@ -37,8 +56,7 @@ def get_component_quote(component, lat1, lon1, lat2, lon2):
         f"&lat2={lat2}&lon2={lon2}"
     )
     
-    response = http_requests.get(url)
-    
+    response = session.get(url)
     if response.status_code == 200:
         return response.json().get('cbr')
     else:
@@ -82,6 +100,10 @@ def calculate_weighted_scores(task, selectedScenario, quotes, uncertainty):
         if uncertainty_affects(uncertainty, comp['type']):
             components_to_remove.append(comp)
 
+    # Remove the components that violated constraints with weight 999
+    quotes = [comp for comp in quotes if comp not in components_to_remove]
+    components_to_remove = []
+
     # Iterate over each constraint in the task
     if 'constraints' in matching_scenario:
         for constraint in matching_scenario['constraints']:
@@ -117,12 +139,15 @@ def calculate_weighted_scores(task, selectedScenario, quotes, uncertainty):
                     components_to_remove.append(component)
                 else:
                     # Apply the penalty by adding the weighted penalty from the score
-                    component['score'] += raw_penalty * weight
+                    component['score'] = component.get('score', 0) + raw_penalty * weight
 
 
     # Remove the components that violated constraints with weight 999
     quotes = [comp for comp in quotes if comp not in components_to_remove]
 
+    if len(quotes) == 0:
+        return scores
+    
     # Iterate over each attribute in the task
     for attribute in matching_scenario['cbr_attributes']:
         # Get attribute details
@@ -133,27 +158,28 @@ def calculate_weighted_scores(task, selectedScenario, quotes, uncertainty):
         # Collect all estimates for this attribute
         all_estimates = [component['cbr'][name] for component in quotes]
 
-        # Calculate min and max values
-        min_value = min(all_estimates)
-        max_value = max(all_estimates)
+        if not all_estimates:
+            # Calculate min and max values
+            min_value = min(all_estimates)
+            max_value = max(all_estimates)
 
-        # Iterate over each component in estimates
-        for component in quotes:
-            # Get the estimate value for this attribute from the component
-            estimated_value = component['cbr'][name]
+            # Iterate over each component in estimates
+            for component in quotes:
+                # Get the estimate value for this attribute from the component
+                estimated_value = component['cbr'][name]
 
-            # Normalize the estimate value
-            normalized_value = normalize(estimated_value, min_value, max_value, max_or_min == 'min')
+                # Normalize the estimate value
+                normalized_value = normalize(estimated_value, min_value, max_value, max_or_min == 'min')
 
-            # Add the weighted attribute to the score
-            component['score'] = component.get('score', 0) + weight * normalized_value
+                # Add the weighted attribute to the score
+                component['score'] = component.get('score', 0) + weight * normalized_value
 
     # Build final scores list
     for component in quotes:
         scores.append({
             "type": component['type'],
             "id": component['id'],
-            "score": component['score'],
+            "score": component['score'] if 'score' in component else 0,
             "cbr": component['cbr'],
             "raw_penalty": component.get('raw_penalty', {})
         })

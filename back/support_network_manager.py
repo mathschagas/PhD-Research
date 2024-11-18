@@ -3,9 +3,28 @@ import colorlog
 import logging
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 import requests
 
 from decision_making import calculate_delegation_cbr_score
+
+# Create a session
+session = requests.Session()
+
+# Define a retry strategy
+retry_strategy = Retry(
+    total=10,  # Total number of retries
+    backoff_factor=1,  # Waits 1 second between retries, then 2s, 4s, 8s...
+    status_forcelist=[429, 500, 502, 503, 504],  # Status codes to retry on
+    allowed_methods=["HEAD", "GET", "OPTIONS"]  # Methods to retry
+)
+
+# Mount the retry strategy to the session
+adapter = HTTPAdapter(max_retries=retry_strategy)
+session.mount("http://", adapter)
+session.mount("https://", adapter)
+
 
 # Configure colorlog for colored logs
 handler = colorlog.StreamHandler()
@@ -53,7 +72,7 @@ class SupportNetworkManager:
             # Add services to self.data that     are in the file but not in self.data
             for service in file_data:
                 if service['port'] not in self_data_ports:
-                    response = requests.get(f'http://localhost:{service["port"]}/info')
+                    response = session.get(f'http://localhost:{service["port"]}/info')
                     if response.status_code == 200:
                         self.data.append(response.json()['component'])
 
@@ -65,7 +84,7 @@ class SupportNetworkManager:
 
     def update_mock_components(self):
         try:
-            response = requests.get(self.mock_api_url)
+            response = session.get(self.mock_api_url)
             if response.status_code == 200:
                 mock_components = response.json().get('components', [])
                 self.data = mock_components  # Update mock components in the components list

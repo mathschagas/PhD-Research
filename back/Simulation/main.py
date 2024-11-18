@@ -2,20 +2,38 @@ import requests
 from datetime import datetime
 import csv
 import json
-# from sn_combinations import get_permutations
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+import os
+
+# Create a session
+session = requests.Session()
+
+# Define a retry strategy
+retry_strategy = Retry(
+    total=10,  # Total number of retries
+    backoff_factor=2,  # Waits 1 second between retries, then 2s, 4s, 8s...
+    status_forcelist=[429, 500, 502, 503, 504],  # Status codes to retry on
+    allowed_methods=["HEAD", "GET", "OPTIONS"]  # Methods to retry
+)
+
+# Mount the retry strategy to the session
+adapter = HTTPAdapter(max_retries=retry_strategy)
+session.mount("http://", adapter)
+session.mount("https://", adapter)
 
 scenarios = [
-    "NoConstraintsBin"
-    # "NoConstraintsWeightedPrice"
-    # "NoConstraintsWeightedTimeToDeliver"
-    # "1ConstraintBin"
-    # "1ConstraintLikert"
-    # "2ConstraintsBin"
-    # "2ConstraintsLikert"
-    # "3ConstraintsBin"
-    # "3ConstraintsLikert"
-    # "HardConstraintsBin"
-    # "HardConstraintsLikert"
+    "NoConstraintsBin",
+    "NoConstraintsWeightedPrice",
+    "NoConstraintsWeightedTimeToDeliver",
+    "1ConstraintBin",
+    "1ConstraintLikert",
+    "2ConstraintsBin",
+    "2ConstraintsLikert",
+    "3ConstraintsBin",
+    "3ConstraintsLikert",
+    "HardConstraintsBin",
+    "HardConstraintsLikert"
 ]
 
 # The list of uncertainties to simulate
@@ -73,13 +91,13 @@ def get_types_for_simulation(num_types, uncertainty):
 def set_environment_apis(components_config):
 
     # Clean the components in the mock API
-    clean_response = requests.post("http://127.0.0.1:5001/clean_components")
+    clean_response = session.post("http://127.0.0.1:5001/clean_components")
     if clean_response.status_code != 200:
         print(f"Failed to clean components. Status code: {clean_response.status_code}, Message: {clean_response.text}")
 
     # Generate components in the mock API
     for component_type in components_config['types']:
-        gen_response = requests.post(
+        gen_response = session.post(
             "http://127.0.0.1:5001/generate_components",
             json={"type": component_type, "quantity": components_config['count']}
         )
@@ -93,7 +111,7 @@ def set_environment_apis(components_config):
         print(f"Failed to clean tasks. Status code: {clean_tasks_response.status_code}, Message: {clean_tasks_response.text}")
     
     # Register tasks to all components in the mock network
-    register_components_response = requests.post(
+    register_components_response = session.post(
         "http://127.0.0.1:5001/register_tasks_to_all",
         json={
             "tasks": [
@@ -107,7 +125,7 @@ def set_environment_apis(components_config):
     else:
         print(f"Failed to register tasks. Status code: {register_components_response.status_code}, Message: {register_components_response.text}")
 
-    get_response = requests.get("http://127.0.0.1:5000/tasks/1")
+    get_response = session.get("http://127.0.0.1:5000/tasks/1")
     return get_response.json()
 
 
@@ -125,7 +143,7 @@ def get_best_component_from_sn(section, uncertainty, scenario = None):
    
     # Get the best component from the Support Network
     url = f"http://127.0.0.1:5002/request_delegation/1/{scenario}" if scenario else "http://127.0.0.1:5002/request_delegation/1/Fragile_Raining"
-    response = requests.get(url, params={"lat1": lat1, "lon1": lon1, "lat2": lat2, "lon2": lon2, "uncertainty": uncertainty})
+    response = session.get(url, params={"lat1": lat1, "lon1": lon1, "lat2": lat2, "lon2": lon2, "uncertainty": uncertainty})
     if response.status_code == 200:
         components = response.json()
         if components:
@@ -177,6 +195,7 @@ def create_output_file(output_file_name="simulation_results.csv"):
     # Set up CSV to record results with reordered columns
     with open(output_file_name, mode='w', newline='') as file:
         writer = csv.writer(file)
+        writer = csv.writer(file)
         writer.writerow([
             'Simulation_ID',
             'Uncertainty_Type',
@@ -196,9 +215,14 @@ def create_output_file(output_file_name="simulation_results.csv"):
 # Run the simulations
 def run_simulations():
     current_datetime = datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
+
+    # Set up CSV to record results with reordered columns
+    results_dir_name = 'results_'+current_datetime
+    os.makedirs(results_dir_name)
+
     for scenario in scenarios:
         # Output file name
-        output_file_name = f'{scenario}_{current_datetime}.csv'
+        output_file_name = f'{results_dir_name}/{scenario}.csv'
         create_output_file(output_file_name=output_file_name)
         simulation_id = 1 # Start IDs from 1
         # For each type of uncertainty
@@ -221,5 +245,9 @@ def run_simulations():
 
 # Main function
 if __name__ == "__main__":
+    start_time = datetime.now()
+    print(f"Simulation started at: {start_time}")
     run_simulations()
-
+    end_time = datetime.now()
+    print(f"Simulation ended at: {end_time}")
+    print(f"Total time taken: {end_time - start_time}")

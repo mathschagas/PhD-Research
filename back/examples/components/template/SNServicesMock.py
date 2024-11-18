@@ -4,8 +4,26 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 import uuid
 import requests as http_requests
-
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 from quote_functions import quote as quote_estimate
+
+# Create a session
+session = http_requests.Session()
+
+# Define a retry strategy
+retry_strategy = Retry(
+    total=10,  # Total number of retries
+    backoff_factor=1,  # Waits 1 second between retries, then 2s, 4s, 8s...
+    status_forcelist=[429, 500, 502, 503, 504],  # Status codes to retry on
+    allowed_methods=["HEAD", "GET", "OPTIONS"]  # Methods to retry
+)
+
+# Mount the retry strategy to the session
+adapter = HTTPAdapter(max_retries=retry_strategy)
+session.mount("http://", adapter)
+session.mount("https://", adapter)
+
 
 app = Flask(__name__)
 CORS(app)
@@ -127,7 +145,7 @@ def register_tasks(component_id):
     # Update the task management API
     component_info = {'id': component_id, 'type': component['type']}
     tasks_data = [{'id': task['id'], 'registered_components': [component_info]} for task in tasks]
-    response = http_requests.put(TASK_MANAGEMENT_API_URL, json=tasks_data)
+    response = session.put(TASK_MANAGEMENT_API_URL, json=tasks_data)
 
     if response.status_code != 200:
         return jsonify(status='ERROR', message='Failed to update tasks in the task management API')
@@ -148,7 +166,7 @@ def register_tasks_to_all():
     for component_id, component in components.items():
         component_info = {'id': component_id, 'type': component['type']}
         tasks_data = [{'id': task['id'], 'registered_components': [component_info]} for task in tasks]
-        response = http_requests.put(TASK_MANAGEMENT_API_URL, json=tasks_data)
+        response = session.put(TASK_MANAGEMENT_API_URL, json=tasks_data)
 
         if response.status_code != 200:
             return jsonify(status='ERROR', message=f'Failed to update tasks for component {component_id} in the task management API')
