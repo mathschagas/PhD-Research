@@ -127,6 +127,26 @@ class SupportNetworkManager:
             score = calculate_delegation_cbr_score(task, uncertainty)
             return jsonify(score)
         
+        @self.app.route('/request_random_delegation/<selectedTask>/<selectedScenario>', methods=['GET'])
+        def decision_making_random(selectedTask, selectedScenario):
+            # Get the latitude and longitude from the query string
+            lat1 = request.args.get('lat1')
+            lon1 = request.args.get('lon1')
+            lat2 = request.args.get('lat2')
+            lon2 = request.args.get('lon2')
+            uncertainty = request.args.get('uncertainty')
+
+            task = {
+                'id': selectedTask,
+                'scenario': selectedScenario,
+                'uncertainty': uncertainty,
+                'start_location': {'lat': lat1, 'lon': lon1},
+                'end_location': {'lat': lat2, 'lon': lon2}
+            }
+
+            score = calculate_delegation_cbr_score(task, uncertainty, isRandom=True)
+            return jsonify(score)
+        
     # Function to send logs every 10 seconds
     # def send_update_logs(self):
         # while True:

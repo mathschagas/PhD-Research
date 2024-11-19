@@ -1,6 +1,7 @@
 import requests as http_requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
+import random
 
 # Create a session
 session = http_requests.Session()
@@ -186,7 +187,7 @@ def calculate_weighted_scores(task, selectedScenario, quotes, uncertainty):
 
     return sorted(scores, key=lambda x: x['score'], reverse=False)
 
-def calculate_delegation_cbr_score(task, uncertainty):
+def calculate_delegation_cbr_score(task, uncertainty, isRandom=False):
 
     # Check which components are registered for this task
     task_data = get_task(task['id'])
@@ -210,5 +211,10 @@ def calculate_delegation_cbr_score(task, uncertainty):
     ]
 
     # Calculate score for each remaining component
-    scores = calculate_weighted_scores(task_data, task['scenario'], quotes, uncertainty)
+    if isRandom:
+        random.shuffle(quotes)
+        scores = quotes
+    else:
+        scores = calculate_weighted_scores(task_data, task['scenario'], quotes, uncertainty)
+
     return scores

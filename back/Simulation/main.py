@@ -130,7 +130,7 @@ def set_environment_apis(components_config):
 
 
 # Get the best component from the Support Network
-def get_best_component_from_sn(section, uncertainty, scenario = None):
+def get_delegation_component_from_sn(section, uncertainty, scenario = None, isRandom = False):
 
     # Initialize distance_to_target variable
     if section == "start":
@@ -141,14 +141,14 @@ def get_best_component_from_sn(section, uncertainty, scenario = None):
         lat1, lon1 = end_x, end_y
     lat2, lon2 = target_x, target_y
    
-    # Get the best component from the Support Network
-    url = f"http://127.0.0.1:5002/request_delegation/1/{scenario}" if scenario else "http://127.0.0.1:5002/request_delegation/1/Fragile_Raining"
+    # Get the best or random component from the Support Network
+    url = f"http://127.0.0.1:5002/request_{"random_" if isRandom else ""}delegation/1/{scenario}" if scenario else f"http://127.0.0.1:5002/request_{"random_" if isRandom else ""}delegation/1/Fragile_Raining"
     response = session.get(url, params={"lat1": lat1, "lon1": lon1, "lat2": lat2, "lon2": lon2, "uncertainty": uncertainty})
     if response.status_code == 200:
         components = response.json()
         if components:
-            best_component = components[0]
-            return best_component, components
+            selected_component = components[0]
+            return selected_component, components
     return None, None
 
 
@@ -165,10 +165,12 @@ def is_mission_completed(uncertainty, best_component):
 
 
 # Simulate the journey of a task
-def simulate_journey(task, simulation_id, uncertainty, section, initial_actor, components_config, scenario, output_file_name="simulation_results.csv"):
-    # Get the best component from the Support Network
-    best_component, ranking = get_best_component_from_sn(section, uncertainty=uncertainty, scenario=scenario)
-    if not best_component:
+def simulate_journey(task, simulation_id, uncertainty, section, initial_actor, components_config, scenario, output_file_name="simulation_results.csv", isRandom = False):
+    
+    # Get component from the Support Network for delegation
+    selected_component, components_list = get_delegation_component_from_sn(section, uncertainty=uncertainty, scenario=scenario, isRandom=isRandom)
+    
+    if not selected_component:
         print(f"No valid component found for delegation at simulation {simulation_id}.")
 
     # Record the simulation results
@@ -179,15 +181,15 @@ def simulate_journey(task, simulation_id, uncertainty, section, initial_actor, c
             uncertainty,
             section,
             initial_actor, 
-            best_component['id'] if best_component else "-",
-            best_component['type'] if best_component else "-", 
-            best_component['score'] if best_component else "-",
-            best_component if best_component else "-",
+            selected_component['id'] if selected_component else "-",
+            selected_component['type'] if selected_component else "-", 
+            selected_component['score'] if not isRandom else "-",
+            selected_component if selected_component else "-",
             ', '.join(components_config['types']),
             components_config['count'],
-            json.dumps(ranking) if ranking else "-",
+            json.dumps(components_list) if components_list else "-",
             json.dumps(task),
-            is_mission_completed(best_component=best_component, uncertainty=uncertainty)
+            is_mission_completed(best_component=selected_component, uncertainty=uncertainty)
         ])
 
 
@@ -213,11 +215,11 @@ def create_output_file(output_file_name="simulation_results.csv"):
         ])
 
 # Run the simulations
-def run_simulations():
+def run_simulations(isRandom=False):
     current_datetime = datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
 
     # Set up CSV to record results with reordered columns
-    results_dir_name = 'results_'+current_datetime
+    results_dir_name = 'results/results_'+current_datetime
     os.makedirs(results_dir_name)
 
     for scenario in scenarios:
@@ -239,7 +241,7 @@ def run_simulations():
                     initial_actor = "InitialDrone" if uncertainty_affects(uncertainty, "drone") else "InitialCar"
                     # For each section of the journey
                     for section in ["start", "middle", "end"]:
-                        simulate_journey(task, simulation_id, uncertainty, section, initial_actor, components_config, scenario, output_file_name=output_file_name)
+                        simulate_journey(task, simulation_id, uncertainty, section, initial_actor, components_config, scenario, output_file_name=output_file_name, isRandom=isRandom)
                         simulation_id += 1
         print(f"Simulations for \"{scenario}\" completed. Results are available in {output_file_name}.")
 
@@ -247,7 +249,7 @@ def run_simulations():
 if __name__ == "__main__":
     start_time = datetime.now()
     print(f"Simulation started at: {start_time}")
-    run_simulations()
+    run_simulations(isRandom=True)
     end_time = datetime.now()
     print(f"Simulation ended at: {end_time}")
     print(f"Total time taken: {end_time - start_time}")
