@@ -11,7 +11,7 @@ session = requests.Session()
 
 # Define a retry strategy
 retry_strategy = Retry(
-    total=10,  # Total number of retries
+    total=20,  # Total number of retries
     backoff_factor=2,  # Waits 1 second between retries, then 2s, 4s, 8s...
     status_forcelist=[429, 500, 502, 503, 504],  # Status codes to retry on
     allowed_methods=["HEAD", "GET", "OPTIONS"]  # Methods to retry
@@ -106,7 +106,7 @@ def set_environment_apis(components_config):
             continue
 
     
-    clean_tasks_response = requests.put("http://127.0.0.1:5000/tasks/1", json={"registered_components": []})
+    clean_tasks_response = session.put("http://127.0.0.1:5000/tasks/1", json={"registered_components": []})
     if clean_tasks_response.status_code != 200:
         print(f"Failed to clean tasks. Status code: {clean_tasks_response.status_code}, Message: {clean_tasks_response.text}")
     
@@ -183,7 +183,7 @@ def simulate_journey(task, simulation_id, uncertainty, section, initial_actor, c
             initial_actor, 
             selected_component['id'] if selected_component else "-",
             selected_component['type'] if selected_component else "-", 
-            selected_component['score'] if not isRandom else "-",
+            selected_component['score'] if not isRandom and selected_component else "-",
             selected_component if selected_component else "-",
             ', '.join(components_config['types']),
             components_config['count'],

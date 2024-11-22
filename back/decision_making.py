@@ -8,7 +8,7 @@ session = http_requests.Session()
 
 # Define a retry strategy
 retry_strategy = Retry(
-    total=10,  # Total number of retries
+    total=20,  # Total number of retries
     backoff_factor=1,  # Waits 1 second between retries, then 2s, 4s, 8s...
     status_forcelist=[429, 500, 502, 503, 504],  # Status codes to retry on
     allowed_methods=["HEAD", "GET", "OPTIONS"]  # Methods to retry
@@ -159,7 +159,7 @@ def calculate_weighted_scores(task, selectedScenario, quotes, uncertainty):
         # Collect all estimates for this attribute
         all_estimates = [component['cbr'][name] for component in quotes]
 
-        if not all_estimates:
+        if all_estimates:
             # Calculate min and max values
             min_value = min(all_estimates)
             max_value = max(all_estimates)
@@ -180,7 +180,7 @@ def calculate_weighted_scores(task, selectedScenario, quotes, uncertainty):
         scores.append({
             "type": component['type'],
             "id": component['id'],
-            "score": component['score'] if 'score' in component else 0,
+            "score": component['score'],
             "cbr": component['cbr'],
             "raw_penalty": component.get('raw_penalty', {})
         })

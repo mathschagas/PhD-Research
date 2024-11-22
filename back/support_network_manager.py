@@ -14,7 +14,7 @@ session = requests.Session()
 
 # Define a retry strategy
 retry_strategy = Retry(
-    total=10,  # Total number of retries
+    total=20,  # Total number of retries
     backoff_factor=1,  # Waits 1 second between retries, then 2s, 4s, 8s...
     status_forcelist=[429, 500, 502, 503, 504],  # Status codes to retry on
     allowed_methods=["HEAD", "GET", "OPTIONS"]  # Methods to retry
