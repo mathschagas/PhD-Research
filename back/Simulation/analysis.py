@@ -64,5 +64,5 @@ def transform_all_csv_in_folder(folder_path, excluded_columns):
 EXCLUDED_COLUMNS = ['id', 'type', 'score', 'Best_Component_Info', 'Task_Info', 'Ranking_Info']
 
 # Example usage
-folder_path = 'results/random_results_21-11-2024_17-56-23'
+folder_path = 'results/random_results_22-11-2024_03-34-41'
 transform_all_csv_in_folder(folder_path, EXCLUDED_COLUMNS)
