@@ -249,7 +249,7 @@ def run_simulations(isRandom=False):
 if __name__ == "__main__":
     start_time = datetime.now()
     print(f"Simulation started at: {start_time}")
-    run_simulations()
+    run_simulations(isRandom=True)
     end_time = datetime.now()
     print(f"Simulation ended at: {end_time}")
     print(f"Total time taken: {end_time - start_time}")

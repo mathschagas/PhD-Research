@@ -87,7 +87,7 @@ def uncertainty_affects(uncertainty, component_type):
             return True
     return False
 
-def calculate_weighted_scores(task, selectedScenario, quotes, uncertainty):
+def calculate_weighted_scores(task, selectedScenario, quotes, uncertainty, isRandom=False):
     # Initialize scores list
     scores = []
     components_to_remove = []
@@ -98,7 +98,7 @@ def calculate_weighted_scores(task, selectedScenario, quotes, uncertainty):
     
     # Remove components that their type is affected by the current uncertainty
     for comp in quotes:
-        if uncertainty_affects(uncertainty, comp['type']):
+        if uncertainty_affects(uncertainty, comp['type']) and not isRandom:
             components_to_remove.append(comp)
 
     # Remove the components that violated constraints with weight 999
@@ -136,7 +136,7 @@ def calculate_weighted_scores(task, selectedScenario, quotes, uncertainty):
                 component['raw_penalty'][name] = raw_penalty
 
                 # Remove the component if the special constraint is not satisfied
-                if weight > 5 and raw_penalty == 1:
+                if weight > 5 and raw_penalty == 1 and not isRandom:
                     components_to_remove.append(component)
                 else:
                     # Apply the penalty by adding the weighted penalty from the score
@@ -185,7 +185,12 @@ def calculate_weighted_scores(task, selectedScenario, quotes, uncertainty):
             "raw_penalty": component.get('raw_penalty', {})
         })
 
-    return sorted(scores, key=lambda x: x['score'], reverse=False)
+     # Calculate score for each remaining component
+    if isRandom:
+        random.shuffle(scores)
+        return scores
+    else:     
+        return sorted(scores, key=lambda x: x['score'], reverse=False)
 
 def calculate_delegation_cbr_score(task, uncertainty, isRandom=False):
 
@@ -210,11 +215,6 @@ def calculate_delegation_cbr_score(task, uncertainty, isRandom=False):
         for comp in available_components
     ]
 
-    # Calculate score for each remaining component
-    if isRandom:
-        random.shuffle(quotes)
-        scores = quotes
-    else:
-        scores = calculate_weighted_scores(task_data, task['scenario'], quotes, uncertainty)
+    scores = calculate_weighted_scores(task_data, task['scenario'], quotes, uncertainty, isRandom)
 
     return scores

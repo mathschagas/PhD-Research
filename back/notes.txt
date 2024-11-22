@@ -1,0 +1,38 @@
+colocar uma caixinha nova para indicar que componentes afetados pela incerteza estão sendo filtrados antes de aplica a formula.
+
+gerar com todas as combinações
+
+1) termina ou nao termina
+
+2) escolhe o melhor componente pra terminar ou não escolhe
+
+3) escolher algo que evite a violação as regras
+
+
+pesos
+
+1) a abordagem é flexível pra selecionar as opções com mais peso do tempo e no preço
+
+2) possível má ponderação
+
+
+
+
+"90% das vezes o aleatório escolheu sempre o mesmo candidato"
+
+extrair padrões e casos específicos interessantes, especulando o pq
+
+
+extrair o future work
+abstrair tudo isso
+
+
+base de compopnentes eu so tenho aquele tipo, nem vale a pena rodar
+otimização de consulta a rede de apoio (SN)
+filtrar os semelhantes 
+quando eu tenho mais de uma incerteza acontecendo
+
+evaluation
+approach
+related work
+intro
