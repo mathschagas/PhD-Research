@@ -2,6 +2,10 @@ colocar uma caixinha nova para indicar que componentes afetados pela incerteza e
 
 gerar com todas as combinações
 
+
+
+Observar resultados
+
 1) termina ou nao termina
 
 2) escolhe o melhor componente pra terminar ou não escolhe
