@@ -161,7 +161,16 @@ def get_delegation_component_from_sn(section, uncertainty, scenario = None, isRa
 
 
 # Check if the delegated component was able to complete the task
-def is_mission_completed(uncertainty, best_component):
+def is_mission_completed(uncertainty, best_component, task, scenario):
+    
+    # If the component violates a hard constraint, the mission is considered incomplete
+    for task_scenario in task['scenarios']:
+        if task_scenario['name'] == scenario:
+            for constraint in task_scenario['constraints']:
+                if constraint['weight'] > 5 and best_component is not None:
+                    if best_component['raw_penalty'][constraint['name']] == 1:
+                        return "No"
+
     mission_completed = "No"
     if not best_component:
         return mission_completed
@@ -197,7 +206,7 @@ def simulate_journey(task, simulation_id, uncertainty, section, initial_actor, c
             components_config['count'],
             json.dumps(components_list) if components_list else "-",
             json.dumps(task),
-            is_mission_completed(best_component=selected_component, uncertainty=uncertainty)
+            is_mission_completed(best_component=selected_component, uncertainty=uncertainty, task=task, scenario=scenario)
         ])
 
 
@@ -259,6 +268,7 @@ def run_simulations(isRandom=False):
 if __name__ == "__main__":
     start_time = datetime.now()
     print(f"Simulation started at: {start_time}")
+    # run_simulations(isRandom=True)
     run_simulations()
     end_time = datetime.now()
     print(f"Simulation ended at: {end_time}")
