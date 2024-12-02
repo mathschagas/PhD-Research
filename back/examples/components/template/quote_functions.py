@@ -43,6 +43,8 @@ def quote(component_type, lat1, lon1, lat2, lon2, component_id):
     time_hours = (distance + distance_to_package) / speed
     time_to_deliver = round(time_hours * 60, 2)
     price = round(distance * cost_per_km, 2)
+    if component_type == "pedestrian":
+        price = 20
 
     return jsonify(
         status="OK",
