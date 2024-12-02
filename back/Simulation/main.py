@@ -165,7 +165,7 @@ def is_mission_completed(uncertainty, best_component, task, scenario):
     
     # If the component violates a hard constraint, the mission is considered incomplete
     for task_scenario in task['scenarios']:
-        if task_scenario['name'] == scenario:
+        if task_scenario['name'] == scenario and 'constraints' in task_scenario:
             for constraint in task_scenario['constraints']:
                 if constraint['weight'] > 5 and best_component is not None:
                     if best_component['raw_penalty'][constraint['name']] == 1:

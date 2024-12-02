@@ -22,5 +22,5 @@ def convert_all_csv_in_directory(directory_path):
 
 # Exemplo de uso
 if __name__ == "__main__":
-    directory_path = 'results'
+    directory_path = 'results/u-cbr'
     convert_all_csv_in_directory(directory_path)

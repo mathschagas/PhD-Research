@@ -55,7 +55,12 @@ def get_component_type_values(uncertainty, df, type):
     type_percentage = (amount / total) * 100 if total > 0 else 0
     type_fpercentage = f"{type_percentage:.2f}%"
 
-    return type_ratio, type_fpercentage
+    completed_missions = df[(df['Best_Component_Type'] == type) & (df['Mission_Completed'] == 'Yes')]
+    completed_missions_percentage = (len(completed_missions) / amount) * 100 if amount > 0 else 0
+    completed_missions_fpercentage = f"{completed_missions_percentage:.2f}%"
+    completed_missions_ratio_percentage = f'{len(completed_missions)}/{amount} ({completed_missions_fpercentage})'
+    
+    return type_ratio, type_fpercentage, completed_missions_ratio_percentage
 
 
 def get_component_completed_mission(df):
@@ -83,7 +88,7 @@ def get_component_penalty_values(df, constraint):
     if column_name not in df.columns:
         return 'N/A', 'N/A'
     penalty_amount = df.get(column_name, pd.Series([0])).sum()
-    penalty_ratio = f"{penalty_amount}/{total}"
+    penalty_ratio = f"{round(penalty_amount)}/{total}"
     penalty_percentage = (penalty_amount / total) * 100 if total > 0 else 0
     penalty_fpercentage = f"{penalty_percentage:.2f}%"
     return penalty_ratio, penalty_fpercentage
@@ -121,11 +126,11 @@ def compile_results():
                 mc_ratio, mc_fpercentage = get_component_completed_mission(df)
 
                 # Component Types
-                drone_ratio, drone_fpercentage = get_component_type_values(uncertainty, df, 'drone')
-                car_ratio, car_fpercentage = get_component_type_values(uncertainty, df, 'car')
-                bicycle_ratio, bicycle_fpercentage = get_component_type_values(uncertainty, df, 'bicycle')
-                truck_ratio, truck_fpercentage = get_component_type_values(uncertainty, df, 'truck')
-                pedestrian_ratio, pedestrian_fpercentage = get_component_type_values(uncertainty, df, 'pedestrian')
+                drone_ratio, drone_fpercentage, drone_success_rate = get_component_type_values(uncertainty, df, 'drone')
+                car_ratio, car_fpercentage, car_success_rate = get_component_type_values(uncertainty, df, 'car')
+                bicycle_ratio, bicycle_fpercentage, bicycle_success_rate = get_component_type_values(uncertainty, df, 'bicycle')
+                truck_ratio, truck_fpercentage, truck_success_rate = get_component_type_values(uncertainty, df, 'truck')
+                pedestrian_ratio, pedestrian_fpercentage, pedestrian_success_rate = get_component_type_values(uncertainty, df, 'pedestrian')
                 
                 # Time to Deliver and Price
                 time_to_deliver_min, time_to_deliver_max, time_to_deliver_avg = get_component_cbr_attribute_values(df, 'time_to_deliver')
@@ -141,10 +146,15 @@ def compile_results():
                     'Approach': df_name,
                     'Mission Completed (%)': f'{mc_ratio} ({mc_fpercentage})',
                     'Drone (%)': f'{drone_ratio} ({drone_fpercentage})',
+                    'Drone Success Rate (%)': drone_success_rate,
                     'Car (%)': f'{car_ratio} ({car_fpercentage})',
+                    'Car Success Rate (%)': car_success_rate,
                     'Bicycle (%)': f'{bicycle_ratio} ({bicycle_fpercentage})',
+                    'Bicycle Success Rate (%)': bicycle_success_rate,
                     'Truck (%)': f'{truck_ratio} ({truck_fpercentage})',
+                    'Truck Success Rate (%)': truck_success_rate,
                     'Pedestrian (%)': f'{pedestrian_ratio} ({pedestrian_fpercentage})',
+                    'Pedestrian Success Rate (%)': pedestrian_success_rate,
                     'Time to Deliver': f'MIN = {time_to_deliver_min}\nMAX = {time_to_deliver_max}\nAVG = {round(time_to_deliver_avg, 2)}'.replace(',', '.'),
                     'Price': f'MIN = {price_min}\nMAX = {price_max}\nAVG = {round(price_avg, 2)}'.replace(',', '.'),
                     'Time to Deliver > 60 (%)': f'{penalty_time_to_deliver_ratio} ({penalty_time_to_deliver_fpercentage})',
