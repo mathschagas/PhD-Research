@@ -36,6 +36,14 @@ scenarios = [
     "HardConstraintsLikert"
 ]
 
+scenarios_random = [
+    "NoConstraintsBin",
+    "1ConstraintBin",
+    "2ConstraintsBin",
+    "3ConstraintsBin",
+    "HardConstraintsBin",
+]
+
 # The list of uncertainties to simulate
 uncertainties = [
     "internal_failure_drone",
@@ -222,7 +230,9 @@ def run_simulations(isRandom=False):
     results_dir_name = 'results/results_'+current_datetime
     os.makedirs(results_dir_name)
 
-    for scenario in scenarios:
+    sim_scenarios = scenarios_random if isRandom else scenarios
+
+    for scenario in sim_scenarios:
         # Output file name
         output_file_name = f'{results_dir_name}/{scenario}.csv'
         create_output_file(output_file_name=output_file_name)
