@@ -82,6 +82,15 @@ def uncertainty_affects(uncertainty, component_type):
     elif component_type == "drone":
         if uncertainty == "bad_weather" or uncertainty == "internal_failure_drone":
             return True
+    elif component_type == "truck":
+        if uncertainty == "traffic_jam" or uncertainty == "restricted_area":
+            return True
+    elif component_type == "bicycle":
+        if uncertainty == "bad_weather":
+            return True
+    elif component_type == "pedestrian":
+        if uncertainty == "bad_weather":
+            return True
     return False
 
 

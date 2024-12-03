@@ -108,17 +108,17 @@ def compile_results():
             ucbr_bin_filename = f"{ucbr_dir}/transformed_{scenario}Bin.xlsx"
     
             # Instantiate each file into a df and append to results_dfs
-            results_dfs['Random'] = pd.read_excel(random_filename)
-            results_dfs['U-CBR Bin'] = pd.read_excel(ucbr_bin_filename)
+            results_dfs['Random'] = pd.read_excel(random_filename, sheet_name=uncertainty)
+            results_dfs['U-CBR Bin'] = pd.read_excel(ucbr_bin_filename, sheet_name=uncertainty)
 
             if scenario == "NoConstraints":
                 ucbr_wp_filename = f"{ucbr_dir}/transformed_NoConstraintsWeightedPrice.xlsx"
-                results_dfs['U-CBR Price'] = pd.read_excel(ucbr_wp_filename)
+                results_dfs['U-CBR Price'] = pd.read_excel(ucbr_wp_filename, sheet_name=uncertainty)
                 ucbr_wt_filename = f"{ucbr_dir}/transformed_NoConstraintsWeightedTimeToDeliver.xlsx"
-                results_dfs['U-CBR Time'] = pd.read_excel(ucbr_wt_filename)
+                results_dfs['U-CBR Time'] = pd.read_excel(ucbr_wt_filename, sheet_name=uncertainty)
             else:
                 ucbr_likert_filename = f"{ucbr_dir}/transformed_{scenario}Likert.xlsx"
-                results_dfs['U-CBR Likert'] = pd.read_excel(ucbr_likert_filename)
+                results_dfs['U-CBR Likert'] = pd.read_excel(ucbr_likert_filename, sheet_name=uncertainty)
 
             scenario_outputs = []
             for df_name, df in results_dfs.items():
