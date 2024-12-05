@@ -1,7 +1,7 @@
 
 # Seção de Avaliação
 
-## 1. Introdução
+## 1. Introdução (Done)
 - **Objetivo**: Explique que a seção avalia a eficácia da abordagem proposta em cenários simulados representando diferentes incertezas, com foco em:
   - Cumprimento das tarefas sob constraints.
   - Escolha do melhor componente.
@@ -84,3 +84,10 @@ Organize os resultados pelas RQs consolidadas:
 ## 6. Conclusão da Avaliação
 - Resuma os principais achados.
 - Reforce como os resultados respondem às RQs e sustentam a relevância da abordagem proposta.
+
+
+## Coisas que tirei e podem ser úteis em outro lugar
+- "We evaluated the approach concerning its accuracy and efficiency in selecting the best component to take over the delegated task facing an uncertain event.
+This is investigated since, although the properties of the delegation candidates are provided and used in the cost-benefit-risk formula, a sub-optimal option is likely selected during the decision-making process. 
+"
+
