@@ -203,7 +203,7 @@
           },
           {
             "name": "time_to_deliver",
-            "type": "max",
+            "type": "min",
             "weight": 1
           }
         ],
@@ -227,7 +227,7 @@
           {
             "name": "time_to_deliver",
             "type": "min",
-            "weight":4
+            "weight": 4
           }
         ],
         "constraints": [
@@ -293,7 +293,7 @@
             "name": "price",
             "operator": "less",
             "value": 100,
-            "weight": 5
+            "weight": 4
           }
         ],
         "name": "2ConstraintsLikert"
@@ -351,19 +351,19 @@
             "name": "time_to_deliver",
             "operator": "less",
             "value": 60,
-            "weight": 5
+            "weight": 4
           },
           {
             "name": "price",
             "operator": "less",
             "value": 100,
-            "weight": 5
+            "weight": 3
           },
           {
             "name": "secure_container",
             "operator": "equal",
             "value": 1,
-            "weight": 3
+            "weight": 5
           }
         ],
         "name": "3ConstraintsLikert"
