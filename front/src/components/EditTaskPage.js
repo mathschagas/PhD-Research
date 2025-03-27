@@ -14,7 +14,7 @@ const EditTaskPage = () => {
 
   useEffect(() => {
     axios
-      .get(`${process.env.MARKETPLACE_URL}/tasks`)
+      .get(`${process.env.REACT_APP_MARKETPLACE_URL}/tasks`)
       .then((response) => {
         setAllTasksData(response.data);
       })
@@ -27,7 +27,7 @@ const EditTaskPage = () => {
     if (isUpdating) {
       console.log("Fetching Task with ID:", taskId);
       axios
-        .get(`${process.env.MARKETPLACE_URL}/tasks/${taskId}`)
+        .get(`${process.env.REACT_APP_MARKETPLACE_URL}/tasks/${taskId}`)
         .then((response) => {
           form.setFieldsValue(response.data);
         })
@@ -48,14 +48,14 @@ const EditTaskPage = () => {
 
         console.log("Updating Task with ID:", taskId);
         const response = await axios.put(
-          `${process.env.MARKETPLACE_URL}/tasks/${taskId}`,
+          `${process.env.REACT_APP_MARKETPLACE_URL}/tasks/${taskId}`,
           values
         );
         console.log("Task updated successfully:", response.data);
       } else {
         console.log("Creating new Task");
         const response = await axios.post(
-          `${process.env.MARKETPLACE_URL}/tasks`,
+          `${process.env.REACT_APP_MARKETPLACE_URL}/tasks`,
           values
         );
         console.log("Task created successfully:", response.data);

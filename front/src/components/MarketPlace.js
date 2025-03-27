@@ -18,8 +18,9 @@ const MarketPlace = () => {
 
   // Function to fetch data from the API
   const fetchData = () => {
+    console.log(`Fetching data from ${process.env.REACT_APP_MARKETPLACE_URL}/tasks`);
     axios
-      .get(`${process.env.MARKETPLACE_URL}/tasks`)
+      .get(`${process.env.REACT_APP_MARKETPLACE_URL}/tasks`)
       .then((response) => {
         setTasksData(response.data);
       })
@@ -87,7 +88,7 @@ const MarketPlace = () => {
   function deleteRow(key) {
     console.log("Deleting row:", key);
     axios
-      .delete(`${process.env.MARKETPLACE_URL}/tasks/${key}`)
+      .delete(`${process.env.REACT_APP_MARKETPLACE_URL}/tasks/${key}`)
       .then(() => {
         fetchData();
       })
