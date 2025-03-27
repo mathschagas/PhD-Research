@@ -3,3 +3,4 @@ back/__pycache__/
 back/examples/components/template/__pycache__/
 back/results/
 front/.env
+front/package-lock.json
