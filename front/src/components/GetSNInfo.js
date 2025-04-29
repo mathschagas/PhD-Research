@@ -26,9 +26,9 @@ function GetSNInfo() {
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const response = await axios.get("http://127.0.0.1:5002/get_data");
+      const response = await axios.get("http://127.0.0.1:5001/components/all");
       console.log("Data fetched successfully:", response.data);
-      setData(response.data);
+      setData(response.data.components);
     } catch (error) {
       console.error("Error fetching data:", error);
       setData([]);
@@ -107,17 +107,17 @@ function GetSNInfo() {
       align: "center",
       width: "5px",
       title: "ID",
-      dataIndex: "port",
+      dataIndex: "id",
       key: "id",
-      render: (port) => port,
+      render: (id) => id,
     },
     {
       align: "center",
       width: "10px",
-      title: "Name",
-      dataIndex: "name",
-      key: "name",
-      render: (name) => name,
+      title: "Type",
+      dataIndex: "type",
+      key: "type",
+      render: (type) => String(type).toUpperCase(),
     },
     {
       align: "center",
