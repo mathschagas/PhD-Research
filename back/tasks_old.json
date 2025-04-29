@@ -25,6 +25,133 @@
       {
         "cbr_attributes": [
           {
+            "name": "time_to_deliver",
+            "type": "min",
+            "weight": 1
+          },
+          {
+            "name": "price",
+            "type": "min",
+            "weight": 1
+          }
+        ],
+        "constraints": [
+          {
+            "name": "time_to_deliver",
+            "operator": "less",
+            "value": 60,
+            "weight": 1
+          },
+          {
+            "name": "price",
+            "operator": "less",
+            "value": 50,
+            "weight": 1
+          }
+        ],
+        "name": "Default"
+      },
+      {
+        "cbr_attributes": [
+          {
+            "name": "time_to_deliver",
+            "type": "min",
+            "weight": 1
+          },
+          {
+            "name": "price",
+            "type": "min",
+            "weight": 1
+          }
+        ],
+        "constraints": [
+          {
+            "name": "time_to_deliver",
+            "operator": "less",
+            "value": 120,
+            "weight": 1
+          },
+          {
+            "name": "price",
+            "operator": "less",
+            "value": 100,
+            "weight": 1
+          }
+        ],
+        "name": "Fragile"
+      },
+      {
+        "cbr_attributes": [
+          {
+            "name": "safe_to_rain",
+            "type": "max",
+            "weight": 2
+          },
+          {
+            "name": "time_to_deliver",
+            "type": "min",
+            "weight": 1
+          },
+          {
+            "name": "price",
+            "type": "min",
+            "weight": 1
+          }
+        ],
+        "constraints": [
+          {
+            "name": "time_to_deliver",
+            "operator": "less",
+            "value": 120,
+            "weight": 1
+          },
+          {
+            "name": "price",
+            "operator": "less",
+            "value": 100,
+            "weight": 1
+          }
+        ],
+        "name": "Raining"
+      },
+      {
+        "cbr_attributes": [
+          {
+            "name": "time_to_deliver",
+            "type": "min",
+            "weight": 1
+          },
+          {
+            "name": "price",
+            "type": "min",
+            "weight": 1
+          }
+        ],
+        "constraints": [
+          {
+            "name": "time_to_deliver",
+            "operator": "less",
+            "value": 60,
+            "weight": 3
+          },
+          {
+            "name": "price",
+            "operator": "less",
+            "value": 50,
+            "weight": 1
+          },
+          {
+            "name": "safe_to_rain",
+            "operator": "equal",
+            "value": 1,
+            "weight": 4
+          }
+        ],
+        "name": "Fragile_Raining"
+      },
+      {
+        "cbr_attributes": [
+          {
             "name": "price",
             "type": "min",
             "weight": 1
@@ -47,7 +174,7 @@
           {
             "name": "time_to_deliver",
             "type": "min",
-            "weight": 2
+            "weight": 3
           }
         ],
         "name": "NoConstraintsWeightedPrice"
@@ -57,7 +184,7 @@
           {
             "name": "price",
             "type": "min",
-            "weight": 2
+            "weight": 3
           },
           {
             "name": "time_to_deliver",
@@ -84,7 +211,7 @@
           {
             "name": "time_to_deliver",
             "operator": "less",
-            "value": 15,
+            "value": 60,
             "weight": 1
           }
         ],
@@ -95,7 +222,7 @@
           {
             "name": "price",
             "type": "min",
-            "weight": 2
+            "weight": 3
           },
           {
             "name": "time_to_deliver",
@@ -107,7 +234,7 @@
           {
             "name": "time_to_deliver",
             "operator": "less",
-            "value": 15,
+            "value": 60,
             "weight": 5
           }
         ],
@@ -130,13 +257,13 @@
           {
             "name": "time_to_deliver",
             "operator": "less",
-            "value": 15,
+            "value": 60,
             "weight": 1
           },
           {
             "name": "price",
             "operator": "less",
-            "value": 30,
+            "value": 100,
             "weight": 1
           }
         ],
@@ -147,7 +274,7 @@
           {
             "name": "price",
             "type": "min",
-            "weight": 2
+            "weight": 3
           },
           {
             "name": "time_to_deliver",
@@ -159,13 +286,13 @@
           {
             "name": "time_to_deliver",
             "operator": "less",
-            "value": 15,
+            "value": 60,
             "weight": 5
           },
           {
             "name": "price",
             "operator": "less",
-            "value": 30,
+            "value": 100,
             "weight": 4
           }
         ],
@@ -188,13 +315,13 @@
           {
             "name": "time_to_deliver",
             "operator": "less",
-            "value": 15,
+            "value": 60,
             "weight": 1
           },
           {
             "name": "price",
             "operator": "less",
-            "value": 30,
+            "value": 100,
             "weight": 1
           },
           {
@@ -211,7 +338,7 @@
           {
             "name": "price",
             "type": "min",
-            "weight": 2
+            "weight": 3
           },
           {
             "name": "time_to_deliver",
@@ -223,13 +350,13 @@
           {
             "name": "time_to_deliver",
             "operator": "less",
-            "value": 15,
+            "value": 60,
             "weight": 4
           },
           {
             "name": "price",
             "operator": "less",
-            "value": 30,
+            "value": 100,
             "weight": 3
           },
           {
@@ -258,13 +385,13 @@
           {
             "name": "time_to_deliver",
             "operator": "less",
-            "value": 15,
+            "value": 60,
             "weight": 1
           },
           {
             "name": "price",
             "operator": "less",
-            "value": 30,
+            "value": 100,
             "weight": 1
           },
           {
@@ -281,7 +408,7 @@
           {
             "name": "price",
             "type": "min",
-            "weight": 2
+            "weight": 3
           },
           {
             "name": "time_to_deliver",
@@ -293,13 +420,13 @@
           {
             "name": "time_to_deliver",
             "operator": "less",
-            "value": 15,
+            "value": 60,
             "weight": 5
           },
           {
             "name": "price",
             "operator": "less",
-            "value": 30,
+            "value": 100,
             "weight": 4
           },
           {

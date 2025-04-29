@@ -159,7 +159,7 @@ def get_delegation_component_from_sn(section, uncertainty, scenario = None, isRa
     lat2, lon2 = target_x, target_y
    
     # Get the best or random component from the Support Network
-    url = f"http://127.0.0.1:5002/request_{"random_" if isRandom else ""}delegation/1/{scenario}" if scenario else f"http://127.0.0.1:5002/request_{"random_" if isRandom else ""}delegation/1/Fragile_Raining"
+    url = f'http://127.0.0.1:5002/request_{"random_" if isRandom else ""}delegation/1/{scenario}' if scenario else f'http://127.0.0.1:5002/request_{"random_" if isRandom else ""}delegation/1/Fragile_Raining'
     response = session.get(url, params={"lat1": lat1, "lon1": lon1, "lat2": lat2, "lon2": lon2, "uncertainty": uncertainty})
     if response.status_code == 200:
         components = response.json()

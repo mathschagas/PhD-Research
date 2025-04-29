@@ -30,9 +30,18 @@ const Delegation = () => {
       setLoading(true);
       try {
         const response = await axios.get(
-          `http://127.0.0.1:5001/request_delegation/${selectedTask}/${encodeURIComponent(
+          `http://127.0.0.1:5002/request_delegation/${selectedTask}/${encodeURIComponent(
             selectedScenario
-          )}`
+          )}`,
+          {
+            params: {
+              lat1: 51.4277,
+              lon1: -0.1847,
+              lat2: 51.3450,
+              lon2: -0.2415,
+              uncertainty: "internal_failure_drone"
+            },
+          }
         );
         setDelegationData(response.data);
       } catch (error) {
