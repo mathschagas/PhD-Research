@@ -26,9 +26,9 @@ function GetSNInfo() {
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const response = await axios.get("http://127.0.0.1:5001/components/all");
+      const response = await axios.get(`${process.env.REACT_APP_SNMANAGER_URL}/get_data`);
       console.log("Data fetched successfully:", response.data);
-      setData(response.data.components);
+      setData(response.data);
     } catch (error) {
       console.error("Error fetching data:", error);
       setData([]);
@@ -89,7 +89,7 @@ function GetSNInfo() {
 
   const fetchTasks = async () => {
     try {
-      const response = await axios.get("http://127.0.0.1:5000/tasks");
+      const response = await axios.get(`${process.env.REACT_APP_MARKETPLACE_URL}/tasks`);
       setTasksList(
         response.data.map((task) => ({ id: task.id, name: task.name }))
       );
