@@ -10,7 +10,7 @@ class marketplace:
         CORS(self.app, resources={r"/tasks/*": {"origins": "*"}})
         self.configure_routes()
         try:
-            with open('tasks.json', 'r') as f:
+            with open('constraintTasks.json', 'r') as f:
                 self.tasks = json.load(f)
         except FileNotFoundError:
             print("File not found. Please ensure the file exists.")

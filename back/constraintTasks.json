@@ -1,0 +1,235 @@
+[
+    {
+        "context_descriptors": [
+            {
+                "name": "current_location_lat",
+                "type": "string"
+            },
+            {
+                "name": "current_location_lon",
+                "type": "string"
+            },
+            {
+                "name": "target_location_lat",
+                "type": "string"
+            },
+            {
+                "name": "target_location_lon",
+                "type": "string"
+            }
+        ],
+        "description": "Deliver a package from the current location to the target location.",
+        "id": "1",
+        "name": "Deliver Package",
+        "scenarios": [
+            {
+                "cbr_attributes": [
+                    {
+                        "name": "price",
+                        "type": "min",
+                        "weight": 1
+                    },
+                    {
+                        "name": "time_to_deliver",
+                        "type": "min",
+                        "weight": 1
+                    }
+                ],
+                "constraints": [
+                    {
+                        "name": "time_to_deliver",
+                        "operator": "less",
+                        "value": 15,
+                        "weight": 1
+                    }
+                ],
+                "name": "SoftTimeConstraint"
+            },
+            {
+                "cbr_attributes": [
+                    {
+                        "name": "price",
+                        "type": "min",
+                        "weight": 1
+                    },
+                    {
+                        "name": "time_to_deliver",
+                        "type": "min",
+                        "weight": 1
+                    }
+                ],
+                "constraints": [
+                    {
+                        "name": "price",
+                        "operator": "less",
+                        "value": "30",
+                        "weight": 1
+                    }
+                ],
+                "name": "SoftPriceConstraint"
+            },
+            {
+                "cbr_attributes": [
+                    {
+                        "name": "price",
+                        "type": "min",
+                        "weight": 1
+                    },
+                    {
+                        "name": "time_to_deliver",
+                        "type": "min",
+                        "weight": 1
+                    }
+                ],
+                "constraints": [
+                    {
+                        "name": "time_to_deliver",
+                        "operator": "less",
+                        "value": 15,
+                        "weight": 6
+                    }
+                ],
+                "name": "HardTimeConstraint"
+            },
+            {
+                "cbr_attributes": [
+                    {
+                        "name": "price",
+                        "type": "min",
+                        "weight": 1
+                    },
+                    {
+                        "name": "time_to_deliver",
+                        "type": "min",
+                        "weight": 1
+                    }
+                ],
+                "constraints": [
+                    {
+                        "name": "price",
+                        "operator": "less",
+                        "value": 30,
+                        "weight": 6
+                    }
+                ],
+                "name": "HardPriceConstraint"
+            },
+            {
+                "cbr_attributes": [
+                    {
+                        "name": "price",
+                        "type": "min",
+                        "weight": 1
+                    },
+                    {
+                        "name": "time_to_deliver",
+                        "type": "min",
+                        "weight": 1
+                    }
+                ],
+                "constraints": [
+                    {
+                        "name": "time_to_deliver",
+                        "operator": "less",
+                        "value": 15,
+                        "weight": 1
+                    },
+                    {
+                        "name": "price",
+                        "operator": "less",
+                        "value": 30,
+                        "weight": 1
+                    }
+                ],
+                "name": "SoftTimeSoftPrice"
+            },
+            {
+                "cbr_attributes": [
+                    {
+                        "name": "price",
+                        "type": "min",
+                        "weight": 1
+                    },
+                    {
+                        "name": "time_to_deliver",
+                        "type": "min",
+                        "weight": 1
+                    }
+                ],
+                "constraints": [
+                    {
+                        "name": "time_to_deliver",
+                        "operator": "less",
+                        "value": 15,
+                        "weight": 6
+                    },
+                    {
+                        "name": "price",
+                        "operator": "less",
+                        "value": 30,
+                        "weight": 1
+                    }
+                ],
+                "name": "HardTimeSoftPrice"
+            },
+            {
+                "cbr_attributes": [
+                    {
+                        "name": "price",
+                        "type": "min",
+                        "weight": 1
+                    },
+                    {
+                        "name": "time_to_deliver",
+                        "type": "min",
+                        "weight": 1
+                    }
+                ],
+                "constraints": [
+                    {
+                        "name": "time_to_deliver",
+                        "operator": "less",
+                        "value": 15,
+                        "weight": 1
+                    },
+                    {
+                        "name": "price",
+                        "operator": "less",
+                        "value": 30,
+                        "weight": 6
+                    }
+                ],
+                "name": "SoftTimeHardPrice"
+            },
+            {
+                "cbr_attributes": [
+                    {
+                        "name": "price",
+                        "type": "min",
+                        "weight": 1
+                    },
+                    {
+                        "name": "time_to_deliver",
+                        "type": "min",
+                        "weight": 1
+                    }
+                ],
+                "constraints": [
+                    {
+                        "name": "time_to_deliver",
+                        "operator": "less",
+                        "value": 15,
+                        "weight": 6
+                    },
+                    {
+                        "name": "price",
+                        "operator": "less",
+                        "value": 30,
+                        "weight": 6
+                    }
+                ],
+                "name": "HardTimeHardPrice"
+            }
+        ]
+    }
+]

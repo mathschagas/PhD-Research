@@ -23,18 +23,29 @@ session.mount("http://", adapter)
 session.mount("https://", adapter)
 
 scenarios = [
-    "NoConstraintsBin",
-    "NoConstraintsWeightedPrice",
-    "NoConstraintsWeightedTimeToDeliver",
-    "1ConstraintBin",
-    "1ConstraintLikert",
-    "2ConstraintsBin",
-    "2ConstraintsLikert",
-    "3ConstraintsBin",
-    "3ConstraintsLikert",
-    "HardConstraintsBin",
-    "HardConstraintsLikert"
+    # "NoConstraintsBin",
+    # "NoConstraintsWeightedPrice",
+    # "NoConstraintsWeightedTimeToDeliver",
+    # "1ConstraintBin",
+    # "1ConstraintLikert",
+    # "2ConstraintsBin",
+    # "2ConstraintsLikert",
+    # "3ConstraintsBin",
+    # "3ConstraintsLikert",
+    # "HardConstraintsBin",
+    # "HardConstraintsLikert"
+
+    "SoftTimeConstraint",
+    "SoftPriceConstraint",
+    "HardTimeConstraint",
+    "HardPriceConstraint",
+    "SoftTimeSoftPrice",
+    "HardTimeSoftPrice",
+    "SoftTimeHardPrice",
+    "HardTimeHardPrice"
 ]
+
+
 
 scenarios_random = [
     "NoConstraintsBin",
