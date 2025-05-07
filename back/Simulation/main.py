@@ -23,7 +23,7 @@ session.mount("http://", adapter)
 session.mount("https://", adapter)
 
 scenarios = [
-    # "NoConstraintsBin",
+    "NoConstraintsBin",
     # "NoConstraintsWeightedPrice",
     # "NoConstraintsWeightedTimeToDeliver",
     # "1ConstraintBin",
@@ -34,7 +34,6 @@ scenarios = [
     # "3ConstraintsLikert",
     # "HardConstraintsBin",
     # "HardConstraintsLikert"
-
     "SoftTimeConstraint",
     "SoftPriceConstraint",
     "HardTimeConstraint",
@@ -76,7 +75,7 @@ component_types = {
 
 
 # Possible number of components for each type
-num_components = [1, 5, 10]
+num_components = [3]
 
 # Latitudes and longitudes for the origin, target, start, middle and end points
 origin_x, origin_y = 51.5103, -0.1277  
